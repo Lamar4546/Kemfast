@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#075b7e" />
+    <meta name="description" content="Start a loan application with Kemlan Financing." />
+    <title>Loan Application | Kemlan Financing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <div class="topline"><span></span> Licensed financial institution under the Microcredit Act</div>
+    <header class="site-header"><a class="brand" href="#top" aria-label="Kemlan Financing home"><img src="./kemlan-logo.png" alt="Kemlan Financing" /></a><a class="header-contact" href="tel:+18767907674"><span class="phone-icon">↗</span><span>Questions? <strong>(876) 790-7674</strong></span></a></header>
+    <main id="top">
+      <section class="hero">
+        <div class="hero-shape shape-one"></div><div class="hero-shape shape-two"></div>
+        <div class="hero-content"><div class="eyebrow"><span class="eyebrow-line"></span> OPPORTUNITY STARTS HERE</div><h1>Your next step,<br /><em>made simple.</em></h1><p>A straightforward application for the support you need. Share a few details and our team will help you with what comes next.</p><div class="hero-points"><span><b>✓</b> Secure form</span><i></i><span>Personal loans</span><i></i><span>Business loans</span></div></div>
+        <div class="hero-art" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="hero-disc"></div><div class="hero-initial">K<span></span></div><div class="art-label">A better way<br /><strong>forward.</strong></div></div>
+      </section>
+      <section class="content-grid">
+        <aside class="side-panel"><div class="side-step"><span id="side-number">01</span><span class="side-rule"></span><span>04</span></div><h2 id="side-title">A little about you.</h2><p id="side-copy">Let’s start with your contact details and where you live.</p><div class="side-contact"><div class="contact-symbol">✦</div><div><strong>Here to help</strong><p>Call or WhatsApp our Kingston team if you need a hand.</p><a href="https://wa.me/18764938482">Chat with us <span>↗</span></a></div></div><div class="side-address">SUITE 5, 9A GARELLI AVENUE<br />NEW KINGSTON, JAMAICA</div></aside>
+        <section class="form-card" id="application">
+          <div class="form-heading"><div><div class="form-kicker">KEMLAN FINANCING · LOAN APPLICATION</div><h2>Tell us about your plans</h2><p>Fields marked <b>*</b> are required.</p></div><span class="step-count" id="step-count">01 <i>/</i> 04</span></div>
+          <div class="progress-track"><span id="progress-fill"></span></div>
+          <div class="progress-meta"><span id="section-label">Personal & address</span><span id="progress-label">Step 1 of 4</span></div>
+          <div id="form-error" class="form-error" role="alert" hidden></div>
+          <div id="success-panel" class="success-panel" hidden><div class="success-check">✓</div><h3>Application received.</h3><p>Thank you for choosing Kemlan Financing. Our team will contact you about your next steps.</p><a class="button button-primary" href="tel:+18767907674">Call our team <span>↗</span></a><button class="button button-secondary" id="new-application" type="button">Start another application</button></div>
+          <form id="application-form" novalidate>
+            <div class="form-step active" data-step="0">
+              <div class="section-heading"><span>01</span><div><strong>Personal details</strong><small>How can we reach you?</small></div></div>
+              <div class="field-grid">
+                <label class="field"><span>First name <b>*</b></span><input name="first_name" required autocomplete="given-name" /></label>
+                <label class="field"><span>Middle name <small>Optional</small></span><input name="middle_name" autocomplete="additional-name" /></label>
+                <label class="field"><span>Last name <b>*</b></span><input name="last_name" required autocomplete="family-name" /></label>
+                <label class="field"><span>Date of birth <b>*</b></span><input name="date_of_birth" type="date" required /></label>
+                <label class="field"><span>TRN <b>*</b></span><input name="trn" required inputmode="numeric" maxlength="11" placeholder="000-000-000" /></label>
+                <label class="field"><span>ID type <b>*</b></span><select name="id_type" required><option value="">Select ID type</option><option>Passport</option><option>Driver’s licence</option><option>Voter’s ID</option><option>Other government ID</option></select></label>
+                <label class="field"><span>Mobile number <b>*</b></span><input name="phone" type="tel" required autocomplete="tel" placeholder="(876) 555-0123" /></label>
+                <label class="field"><span>Other phone <small>Optional</small></span><input name="other_phone" type="tel" /></label>
+                <label class="field field-wide"><span>Email address <b>*</b></span><input name="email" type="email" required autocomplete="email" placeholder="you@example.com" /></label>
+              </div>
+              <div class="section-heading section-spaced"><span>02</span><div><strong>Where you live</strong><small>Your current home address</small></div></div>
+              <div class="field-grid">
+                <label class="field field-wide"><span>Home address <b>*</b></span><input name="home_address" required autocomplete="street-address" placeholder="Street or district" /></label>
+                <label class="field"><span>Town / city <b>*</b></span><input name="town" required autocomplete="address-level2" /></label>
+                <label class="field"><span>Parish <b>*</b></span><select name="parish" required><option value="">Select parish</option><option>Clarendon</option><option>Hanover</option><option>Kingston</option><option>Manchester</option><option>Portland</option><option>St. Andrew</option><option>St. Ann</option><option>St. Catherine</option><option>St. Elizabeth</option><option>St. James</option><option>St. Mary</option><option>St. Thomas</option><option>Trelawny</option><option>Westmoreland</option></select></label>
+                <label class="field"><span>Residence <b>*</b></span><select name="residence" required><option value="">Select one</option><option>Own</option><option>Rent</option><option>Family</option><option>Other</option></select></label>
+                <label class="field"><span>Time at this address <b>*</b></span><input name="time_at_address" required placeholder="e.g. 2 years" /></label>
+              </div>
+            </div>
+            <div class="form-step" data-step="1">
+              <div class="section-heading"><span>03</span><div><strong>Employment & income</strong><small>Tell us about your work and pay</small></div></div>
+              <div class="field-grid">
+                <label class="field"><span>Employment status <b>*</b></span><select name="employment_status" required><option value="">Select one</option><option>Employed</option><option>Self-employed</option><option>Business owner</option><option>Other</option></select></label>
+                <label class="field"><span>Employment duration <b>*</b></span><input name="employment_duration" required placeholder="e.g. 3 years" /></label>
+                <label class="field"><span>Employer / business name <b>*</b></span><input name="employer_name" required autocomplete="organization" /></label>
+                <label class="field"><span>Employer sector <b>*</b></span><input name="employer_sector" required placeholder="e.g. Education" /></label>
+                <label class="field"><span>Job title / occupation <b>*</b></span><input name="job_title" required /></label>
+                <label class="field"><span>Branch / department <small>Optional</small></span><input name="branch_department" /></label>
+                <label class="field field-wide"><span>Company / work address <b>*</b></span><input name="company_address" required /></label>
+                <label class="field"><span>Company phone <b>*</b></span><input name="company_phone" type="tel" required /></label>
+                <label class="field"><span>Supervisor / manager name <b>*</b></span><input name="supervisor_name" required /></label>
+                <label class="field"><span>Supervisor phone <b>*</b></span><input name="supervisor_phone" type="tel" required /></label>
+                <fieldset class="field field-wide choice-field"><legend>Does your employer allow salary deduction? <b>*</b></legend><label><input type="radio" name="salary_deduction_allowed" value="Yes" required /> Yes</label><label><input type="radio" name="salary_deduction_allowed" value="No" /> No</label></fieldset>
+              </div>
+              <div class="section-heading section-spaced"><span>04</span><div><strong>Pay details</strong><small>Take-home pay after deductions</small></div></div>
+              <div class="field-grid">
+                <label class="field"><span>Pay frequency <b>*</b></span><select name="pay_frequency" required><option value="">Select one</option><option>Weekly</option><option>Fortnightly</option><option>Monthly</option><option>Other</option></select></label>
+                <label class="field"><span>Net pay per pay period (JMD) <b>*</b></span><input name="net_pay" type="number" min="0" required inputmode="decimal" /></label>
+                <label class="field"><span>Next pay date <b>*</b></span><input name="next_pay_date" type="date" required /></label>
+                <fieldset class="field field-wide choice-field"><legend>Do you have additional income? <b>*</b></legend><label><input type="radio" name="has_additional_income" value="Yes" required /> Yes</label><label><input type="radio" name="has_additional_income" value="No" /> No</label></fieldset>
+              </div>
+            </div>
+            <div class="form-step" data-step="2">
+              <div class="section-heading"><span>05</span><div><strong>Loan request</strong><small>What would you like help with?</small></div></div>
+              <div class="field-grid">
+                <label class="field"><span>Amount requested (JMD) <b>*</b></span><input name="loan_amount" type="number" min="1" required inputmode="decimal" /></label>
+                <label class="field"><span>Preferred term <b>*</b></span><select name="loan_term" required><option value="">Select term</option><option>1 month</option><option>2–3 months</option><option>4–6 months</option><option>7–9 months</option><option>Discuss with me</option></select></label>
+                <label class="field"><span>Loan purpose <b>*</b></span><select name="loan_purpose" required><option value="">Select purpose</option><option>Personal or family needs</option><option>Medical / emergency</option><option>Education</option><option>Home improvement</option><option>Debt consolidation</option><option>Business</option><option>Other</option></select></label>
+                <label class="field"><span>Repayment / security route <b>*</b></span><select name="repayment_route" required><option value="">Select one</option><option>Salary deduction</option><option>Bank transfer</option><option>Collateral</option><option>Discuss with me</option></select></label>
+                <label class="field"><span>Promo code <small>Optional</small></span><input name="promo_code" /></label>
+                <label class="field field-wide"><span>Briefly explain the loan purpose <b>*</b></span><textarea name="loan_explanation" rows="3" required></textarea></label>
+                <fieldset class="field field-wide choice-field"><legend>Do you have loans not recorded on your payslip? <b>*</b></legend><label><input type="radio" name="has_off_payroll_loans" value="Yes" required /> Yes</label><label><input type="radio" name="has_off_payroll_loans" value="No" /> No</label></fieldset>
+              </div>
+            </div>
+            <div class="form-step" data-step="3">
+              <div class="section-heading"><span>07</span><div><strong>References</strong><small>One family member and one non-family reference</small></div></div>
+              <div class="reference-block"><div class="reference-title">FAMILY REFERENCE</div><div class="field-grid">
+                <label class="field"><span>Full name <b>*</b></span><input name="family_ref_name" required /></label><label class="field"><span>Phone number <b>*</b></span><input name="family_ref_phone" type="tel" required /></label><label class="field"><span>Relationship <b>*</b></span><input name="family_ref_relationship" required /></label><label class="field"><span>Address / community <b>*</b></span><input name="family_ref_address" required /></label>
+              </div></div>
+              <div class="reference-block"><div class="reference-title">NON-FAMILY REFERENCE</div><div class="field-grid">
+                <label class="field"><span>Full name <b>*</b></span><input name="other_ref_name" required /></label><label class="field"><span>Phone number <b>*</b></span><input name="other_ref_phone" type="tel" required /></label><label class="field"><span>Relationship <b>*</b></span><input name="other_ref_relationship" required /></label><label class="field"><span>Address / community <b>*</b></span><input name="other_ref_address" required /></label>
+              </div></div>
+              <div class="section-heading section-spaced"><span>08</span><div><strong>Checklist of documents to submit</strong><small>Tick the documents you already have ready</small></div></div>
+              <div class="document-grid">
+                <label><input type="checkbox" name="documents" value="Government ID" /><span>Government ID</span></label>
+                <label><input type="checkbox" name="documents" value="TRN" /><span>TRN</span></label>
+                <label><input type="checkbox" name="documents" value="Recent photograph" /><span>Recent photograph</span></label>
+                <label><input type="checkbox" name="documents" value="Proof of address / JP letter" /><span>Proof of address / JP letter</span></label>
+                <label><input type="checkbox" name="documents" value="3 months payslips" /><span>3 months payslips</span></label>
+                <label><input type="checkbox" name="documents" value="2 months bank statements" /><span>2 months bank statements</span></label>
+                <label><input type="checkbox" name="documents" value="Work ID" /><span>Work ID (if available)</span></label>
+              </div>
+              <p class="document-note">If you do not have proof of address, contact Kemlan about field verification and any applicable fee. Send documents only through a Kemlan approved channel.</p>
+              <label class="consent"><input type="checkbox" name="consent" required /><span>I confirm that the information above is accurate and agree to the <a href="https://kemlanfinancing.com/terms-conditions.php" target="_blank" rel="noreferrer">Terms and Conditions</a> and <a href="https://kemlanfinancing.com/privacy-policy.php" target="_blank" rel="noreferrer">Privacy Policy</a>. <b>*</b></span></label>
+              <label class="consent marketing"><input type="checkbox" name="marketing_consent" /><span>I consent to receive marketing communications from Kemlan Financing.</span></label>
+            </div>
+            <div class="form-actions"><button class="button button-back" id="back-button" type="button" hidden>← &nbsp; Back</button><button class="button button-primary" id="next-button" type="button">Continue <span>→</span></button><button class="button button-primary" id="submit-button" type="submit" hidden>Submit application <span>→</span></button></div>
+            <div class="privacy-note"><span>▣</span> Your information is private and handled securely.</div>
+          </form>
+        </section>
+      </section>
+      <section class="products-section"><div class="products-heading"><div><div class="form-kicker">LOAN SOLUTIONS</div><h2>Support for what’s next.</h2></div><a href="https://kemlanfinancing.com/services.php">Explore all services <span>↗</span></a></div><div class="product-grid"><article class="product-card"><div class="product-icon payday">↗</div><div class="product-tag">BETWEEN PAYDAYS</div><h3>Payday loans</h3><p>Short-term help when you need to bridge the gap before your next pay.</p><span class="product-term">1 month repayment</span></article><article class="product-card"><div class="product-icon personal">✳</div><div class="product-tag">PERSONAL PLANS</div><h3>Personal loans</h3><p>For planned expenses, unexpected needs and life’s important moments.</p><span class="product-term">Up to 6 months</span></article><article class="product-card"><div class="product-icon collateral">◇</div><div class="product-tag">USE AN ASSET</div><h3>Collateral loans</h3><p>Use a valuable item as security for the financing you need.</p><span class="product-term">Up to 9 months</span></article><article class="product-card"><div class="product-icon business">⌂</div><div class="product-tag">GROW YOUR BUSINESS</div><h3>Business loans</h3><p>Funding for inventory, payroll, expansion and new opportunities.</p><span class="product-term">Up to 9 months</span></article></div><div class="process-strip"><span class="process-kicker">YOUR APPLICATION JOURNEY</span><div><b>01</b><span>Apply online</span></div><i></i><div><b>02</b><span>Our team reviews your details</span></div><i></i><div><b>03</b><span>Discuss next steps</span></div></div></section>
+      <section class="bottom-cta"><div><span class="bottom-kicker">OPPORTUNITY STARTS HERE</span><h2>Let’s find a way forward.</h2><p>Payday · Personal · Collateral · Business loans</p></div><a class="button button-white" href="tel:+18767907674">Talk to our team <span>↗</span></a></section>
+    </main>
+    <footer><a class="footer-logo" href="#top"><img src="./kemlan-logo.png" alt="Kemlan Financing" /></a><span>Suite 5, 9A Garelli Avenue, New Kingston, Jamaica</span><a href="tel:+18767907674">(876) 790-7674</a><a href="mailto:info@kemlanfinancing.com">info@kemlanfinancing.com</a><span>Mon–Fri 8:30 AM–4:00 PM</span><span>© 2026 Kemlan Financing Limited</span></footer>
+  </body>
+</html>
