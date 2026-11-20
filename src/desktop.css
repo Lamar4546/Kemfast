@@ -1,0 +1,33 @@
+@media(min-width:1000px){
+  .hero{min-height:410px}
+  .hero h1{font-size:58px}
+  .hero-content>p{font-size:16px}
+  .hero .eyebrow{font-size:12px}
+  .hero-points{font-size:13px}
+  .content-grid{max-width:1280px;grid-template-columns:280px minmax(0,1fr);gap:56px;padding-top:58px;padding-bottom:78px}
+  .side-panel h2{font-size:28px}
+  .side-panel>p{font-size:15px;max-width:260px}
+  .side-step{font-size:12px}
+  .form-card{padding:38px 44px 30px}
+  .form-heading h2{font-size:28px}
+  .form-heading p{font-size:13px}
+  .form-kicker{font-size:11px}
+  .section-heading strong{font-size:15px}
+  .section-heading small{font-size:12px}
+  .field,.field>span,.field legend{font-size:14px}
+  .field input,.field select,.field textarea{font-size:14px;min-height:46px}
+  .field textarea{min-height:92px}
+  .choice-field label,.document-grid label{font-size:13px}
+  .products-section{max-width:1280px;padding-bottom:68px}
+  .products-heading h2{font-size:30px}
+  .product-card{min-height:230px;padding:22px}
+  .product-tag{font-size:10px}
+  .product-card h3{font-size:19px}
+  .product-card p{font-size:14px;min-height:58px}
+  .product-term{font-size:12px}
+  .process-strip div{font-size:13px}
+  .bottom-cta{padding-top:38px;padding-bottom:38px}
+  .bottom-kicker{font-size:11px}
+  .bottom-cta h2{font-size:27px}
+  .bottom-cta p{font-size:14px}
+}

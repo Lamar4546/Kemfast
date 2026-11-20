@@ -18,6 +18,8 @@ A branded mobile-first QR landing page, four-part application form, and staff-on
 5. On Vercel, configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the frontend build. To enable **Add staff member**, also configure `SUPABASE_SERVICE_ROLE_KEY` as a server-only environment variable (do not prefix it with `VITE_`, and never expose it in browser code). The invite API checks the signed-in user's `admin_users` membership before it sends an Auth invite and grants the new account dashboard access.
 6. Deploy to an HTTPS host. Use the deployed `/` URL in the QR code and give authorized staff the `/admin.html` URL. The first administrator still has to be added to `admin_users` manually; after that, an administrator can add staff from the dashboard.
 
+If this Supabase project already has the application table, run the updated `supabase/schema.sql` again to add dashboard status and admin update/delete permissions. It uses `if not exists` and recreates the staff policies, so it can be safely re-run. Admins can search/filter applications, set them to New, Pending approval, or Approved, and permanently delete a record after confirming the action.
+
 The browser's anon key is designed to be public. Row level security is what protects the records: unauthenticated visitors have insert permission only, while application reads are limited to allowlisted staff. The admin login session is held in the current browser tab's session storage and is cleared when staff sign out. Invitation delivery depends on the Supabase Auth email provider and its configured templates.
 
 ## Form scope

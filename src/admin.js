@@ -24,18 +24,81 @@ async function loadApplications() {
   if (!response.ok) throw new Error(response.status === 403 ? 'Your account does not have permission to view applications.' : 'Could not load applications. Please try again.');
   const applications = await response.json();
   document.querySelector('#total-count').textContent = applications.length;
-  document.querySelector('#new-count').textContent = applications.length;
+  document.querySelector('#new-count').textContent = applications.filter(row => !row.status || row.status === 'new').length;
   const body = document.querySelector('#applications-body');
   body.replaceChildren();
   document.querySelector('#empty-state').hidden = applications.length > 0;
   for (const row of applications) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><strong>${safe(row.first_name)} ${safe(row.last_name)}</strong><small>${safe(row.parish)} · ${safe(row.town)}</small></td><td><strong>${safe(row.phone)}</strong><small>${safe(row.email)}</small></td><td><strong>JMD $${Number(row.loan_amount).toLocaleString('en-JM')}</strong><small>${safe(row.loan_purpose)} · ${safe(row.loan_term)}</small></td><td><strong>${safe(row.employer_name)}</strong><small>${safe(row.job_title)}</small></td><td>${safe(dateLabel(row.created_at))}</td>`;
+    const status = row.status || 'new';
+    tr.dataset.status = status;
+    tr.innerHTML = `<td><strong>${safe(row.first_name)} ${safe(row.last_name)}</strong><small>${safe(row.parish)} · ${safe(row.town)}</small></td><td><strong>${safe(row.phone)}</strong><small>${safe(row.email)}</small></td><td><strong>JMD $${Number(row.loan_amount).toLocaleString('en-JM')}</strong><small>${safe(row.loan_purpose)} · ${safe(row.loan_term)}</small></td><td><strong>${safe(row.employer_name)}</strong><small>${safe(row.job_title)}</small></td><td>${safe(dateLabel(row.created_at))}</td><td><span class="status-badge status-${safe(status)}">${safe(statusLabel(status))}</span></td><td class="row-actions"><select class="status-select" aria-label="Update status for ${safe(row.first_name)} ${safe(row.last_name)}"><option value="new" ${status === 'new' ? 'selected' : ''}>New</option><option value="pending_approval" ${status === 'pending_approval' ? 'selected' : ''}>Pending approval</option><option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option></select><button type="button" class="delete-application" aria-label="Delete application for ${safe(row.first_name)} ${safe(row.last_name)}">Delete</button></td>`;
     tr.tabIndex = 0;
     tr.setAttribute('aria-label', `View ${row.first_name} ${row.last_name} application details`);
-    tr.addEventListener('click', () => showDetails(row));
-    tr.addEventListener('keydown', event => { if (event.key === 'Enter') showDetails(row); });
+    tr.addEventListener('click', event => { if (!event.target.closest('.row-actions')) showDetails(row); });
+    tr.addEventListener('keydown', event => { if (event.key === 'Enter' && event.target === tr) showDetails(row); });
+    const statusSelect = tr.querySelector('.status-select');
+    statusSelect.addEventListener('click', event => event.stopPropagation());
+    statusSelect.addEventListener('change', event => updateApplicationStatus(row, event.target.value, event.target));
+    const deleteButton = tr.querySelector('.delete-application');
+    deleteButton.addEventListener('click', event => { event.stopPropagation(); deleteApplication(row, deleteButton); });
     body.append(tr);
+  }
+  filterApplications();
+}
+
+function filterApplications() {
+  const query = document.querySelector('#application-search').value.trim().toLowerCase();
+  const status = document.querySelector('#status-filter').value;
+  let visible = 0;
+  for (const row of document.querySelectorAll('#applications-body tr')) {
+    const matchesQuery = !query || row.textContent.toLowerCase().includes(query);
+    const matchesStatus = status === 'all' || row.dataset.status === status;
+    row.hidden = !(matchesQuery && matchesStatus);
+    if (!row.hidden) visible++;
+  }
+  const empty = document.querySelector('#empty-state');
+  empty.hidden = visible > 0;
+  if (document.querySelectorAll('#applications-body tr').length && visible === 0) empty.textContent = 'No applications match these filters.';
+  else empty.textContent = 'No applications yet. New submissions will appear here.';
+}
+
+function statusLabel(status) {
+  return ({ new: 'New', pending_approval: 'Pending approval', approved: 'Approved' })[status] || 'New';
+}
+
+async function updateApplicationStatus(row, status, control) {
+  control.disabled = true;
+  try {
+    const response = await fetch(`${URL}/rest/v1/loan_applications?id=eq.${encodeURIComponent(row.id)}`, {
+      method: 'PATCH',
+      headers: { apikey: KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ status })
+    });
+    if (!response.ok) throw new Error('Could not update this application. Apply the dashboard permissions in Supabase, then try again.');
+    row.status = status;
+    await loadApplications();
+  } catch (error) {
+    showError(error.message);
+    control.value = row.status || 'new';
+  } finally {
+    control.disabled = false;
+  }
+}
+
+async function deleteApplication(row, button) {
+  if (!window.confirm(`Permanently delete the application for ${row.first_name} ${row.last_name}? This cannot be undone.`)) return;
+  button.disabled = true;
+  try {
+    const response = await fetch(`${URL}/rest/v1/loan_applications?id=eq.${encodeURIComponent(row.id)}`, {
+      method: 'DELETE',
+      headers: { apikey: KEY, Authorization: `Bearer ${accessToken}`, Prefer: 'return=minimal' }
+    });
+    if (!response.ok) throw new Error('Could not delete this application. Apply the dashboard permissions in Supabase, then try again.');
+    await loadApplications();
+  } catch (error) {
+    showError(error.message);
+    button.disabled = false;
   }
 }
 
@@ -112,5 +175,7 @@ inviteForm.addEventListener('submit', async event => {
 document.querySelector('#close-modal').addEventListener('click', () => detailsModal.close());
 detailsModal.addEventListener('click', event => { if (event.target === detailsModal) detailsModal.close(); });
 document.querySelector('#refresh').addEventListener('click', async () => { try { await loadApplications(); } catch (error) { showError(error.message); } });
+document.querySelector('#application-search').addEventListener('input', filterApplications);
+document.querySelector('#status-filter').addEventListener('change', filterApplications);
 const session = sessionStorage.getItem('kemlan_admin_session');
 if (session && URL && KEY) signInWithToken(session);

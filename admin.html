@@ -51,8 +51,8 @@
           <p id="invite-status" class="invite-status" role="status" aria-live="polite"></p>
         </section>
         <div class="table-card">
-          <div class="table-toolbar"><div><h2>Applications</h2><p>Most recent submissions first · Select a row for details</p></div><button id="refresh" class="refresh-button" type="button">↻ &nbsp; Refresh</button></div>
-          <div class="table-scroll"><table><thead><tr><th>Applicant</th><th>Contact</th><th>Loan request</th><th>Employment</th><th>Submitted</th></tr></thead><tbody id="applications-body"></tbody></table></div>
+          <div class="table-toolbar"><div><h2>Applications</h2><p>Most recent submissions first · Select a row for details</p></div><div class="table-tools"><label class="search-field"><span class="sr-only">Search applications</span><input id="application-search" type="search" placeholder="Search name, phone, email…" /></label><label class="filter-field"><span class="sr-only">Filter applications by status</span><select id="status-filter"><option value="all">All statuses</option><option value="new">New</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option></select></label><button id="refresh" class="refresh-button" type="button">↻ &nbsp; Refresh</button></div></div>
+          <div class="table-scroll"><table><thead><tr><th>Applicant</th><th>Contact</th><th>Loan request</th><th>Employment</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="applications-body"></tbody></table></div>
           <div id="empty-state" hidden>No applications yet. New submissions will appear here.</div>
         </div>
         <p class="admin-note">Application records contain personal financial information. Keep access to authorized staff only.</p>

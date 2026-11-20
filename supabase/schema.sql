@@ -5,6 +5,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.loan_applications (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
+  status text not null default 'new' check (status in ('new','pending_approval','approved')),
   first_name text not null,
   middle_name text,
   last_name text not null,
@@ -68,6 +69,7 @@ begin
 end $$;
 
 alter table public.loan_applications
+  add column if not exists status text not null default 'new',
   add column if not exists middle_name text,
   add column if not exists id_type text,
   add column if not exists other_phone text,
@@ -96,6 +98,14 @@ alter table public.loan_applications
   add column if not exists other_ref_address text,
   add column if not exists documents text[] not null default '{}',
   add column if not exists terms_accepted boolean not null default true;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'loan_applications_status_check') then
+    alter table public.loan_applications add constraint loan_applications_status_check
+      check (status in ('new','pending_approval','approved'));
+  end if;
+end $$;
 
 create table if not exists public.admin_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -128,6 +138,15 @@ create policy "Admins can view their own allowlist entry" on public.admin_users
 revoke all on public.loan_applications from anon, authenticated;
 grant insert on public.loan_applications to anon, authenticated;
 grant select on public.loan_applications to authenticated;
+grant update (status) on public.loan_applications to authenticated;
+grant delete on public.loan_applications to authenticated;
+drop policy if exists "Kemlan staff can update application status" on public.loan_applications;
+create policy "Kemlan staff can update application status" on public.loan_applications
+  for update to authenticated using ((select public.is_kemlan_admin()))
+  with check ((select public.is_kemlan_admin()));
+drop policy if exists "Kemlan staff can delete applications" on public.loan_applications;
+create policy "Kemlan staff can delete applications" on public.loan_applications
+  for delete to authenticated using ((select public.is_kemlan_admin()));
 revoke all on public.admin_users from anon, authenticated;
 grant select on public.admin_users to authenticated;
 
