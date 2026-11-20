@@ -6,6 +6,10 @@ const loginForm = document.querySelector('#login-form');
 const errorBox = document.querySelector('#admin-error');
 const signout = document.querySelector('#signout');
 const detailsModal = document.querySelector('#details-modal');
+const inviteCard = document.querySelector('#invite-card');
+const inviteForm = document.querySelector('#invite-form');
+const inviteStatus = document.querySelector('#invite-status');
+const inviteToggle = document.querySelector('#toggle-invite');
 let accessToken = null;
 
 function showError(message) { errorBox.textContent = message; errorBox.hidden = false; }
@@ -43,7 +47,7 @@ function showDetails(row) {
   for (const [key, label] of Object.entries(labels)) {
     const value = key === 'created_at' ? dateLabel(row[key]) : (key === 'net_pay' || key === 'loan_amount') && row[key] !== null ? `JMD $${Number(row[key]).toLocaleString('en-JM')}` : Array.isArray(row[key]) ? row[key].join(', ') || 'None selected' : row[key];
     if (value === null || value === undefined || value === '') continue;
-    const item = document.createElement('div'); item.className = 'detail-item';
+    const item = document.createElement('div'); item.className = 'modal-field';
     const title = document.createElement('span'); title.textContent = label;
     const detail = document.createElement('strong'); detail.textContent = String(value);
     item.append(title, detail); fields.append(item);
@@ -74,6 +78,37 @@ loginForm.addEventListener('submit', async event => {
 });
 
 signout.addEventListener('click', () => { sessionStorage.removeItem('kemlan_admin_session'); accessToken = null; setSignedIn(false); });
+inviteToggle.addEventListener('click', () => {
+  inviteCard.hidden = !inviteCard.hidden;
+  inviteToggle.setAttribute('aria-expanded', String(!inviteCard.hidden));
+  if (!inviteCard.hidden) inviteForm.querySelector('input').focus();
+});
+inviteForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  inviteStatus.classList.remove('error');
+  inviteStatus.textContent = '';
+  const button = inviteForm.querySelector('button');
+  button.disabled = true;
+  button.textContent = 'Sending invitation…';
+  const email = new FormData(inviteForm).get('email');
+  try {
+    const response = await fetch('/api/staff-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ email })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'Could not send invitation. Please try again.');
+    inviteStatus.textContent = `Invitation sent to ${email}. They will need to set a password from their email.`;
+    inviteForm.reset();
+  } catch (error) {
+    inviteStatus.textContent = error.message;
+    inviteStatus.classList.add('error');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Send invitation';
+  }
+});
 document.querySelector('#close-modal').addEventListener('click', () => detailsModal.close());
 detailsModal.addEventListener('click', event => { if (event.target === detailsModal) detailsModal.close(); });
 document.querySelector('#refresh').addEventListener('click', async () => { try { await loadApplications(); } catch (error) { showError(error.message); } });

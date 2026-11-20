@@ -14,11 +14,11 @@ A branded mobile-first QR landing page, four-part application form, and staff-on
 1. Create a Supabase project.
 2. Open **SQL Editor**, paste and run [`supabase/schema.sql`](supabase/schema.sql).
 3. In **Project Settings → API**, copy the Project URL and publishable key (or legacy anon key) into `.env.local`. Never put the service role key in this frontend.
-4. In **Authentication → Users**, create the manager's staff account with a strong password.
-5. In SQL Editor, add that staff user's UUID to the `admin_users` allowlist. The command is provided at the bottom of `schema.sql`; use the user's actual auth email. Only allowlisted signed-in users can read the application table.
-6. Deploy the static app to an HTTPS host and configure the same environment values in its build settings. Use the deployed `/` URL in the QR code and give the manager the `/admin.html` URL.
+4. Create the manager's account in **Authentication → Users**, then add its UUID to the `admin_users` allowlist using the SQL command at the bottom of `schema.sql`.
+5. On Vercel, configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the frontend build. To enable **Add staff member**, also configure `SUPABASE_SERVICE_ROLE_KEY` as a server-only environment variable (do not prefix it with `VITE_`, and never expose it in browser code). The invite API checks the signed-in user's `admin_users` membership before it sends an Auth invite and grants the new account dashboard access.
+6. Deploy to an HTTPS host. Use the deployed `/` URL in the QR code and give authorized staff the `/admin.html` URL. The first administrator still has to be added to `admin_users` manually; after that, an administrator can add staff from the dashboard.
 
-The browser's anon key is designed to be public. Row level security is what protects the records: unauthenticated visitors have insert permission only, while application reads are limited to allowlisted staff. The admin login session is held in the current browser tab's session storage and is cleared when staff sign out.
+The browser's anon key is designed to be public. Row level security is what protects the records: unauthenticated visitors have insert permission only, while application reads are limited to allowlisted staff. The admin login session is held in the current browser tab's session storage and is cleared when staff sign out. Invitation delivery depends on the Supabase Auth email provider and its configured templates.
 
 ## Form scope
 
