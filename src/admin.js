@@ -104,7 +104,7 @@ async function deleteApplication(row, button) {
 
 function showDetails(row) {
   document.querySelector('#modal-name').textContent = `${row.first_name} ${row.last_name}`;
-  const labels = { created_at: 'Submitted', first_name: 'First name', middle_name: 'Middle name', last_name: 'Last name', date_of_birth: 'Date of birth', trn: 'TRN', id_type: 'ID type', phone: 'Mobile number', other_phone: 'Other phone', email: 'Email address', home_address: 'Home address', town: 'Town / city', parish: 'Parish', residence: 'Residence', time_at_address: 'Time at this address', employment_status: 'Employment status', employment_duration: 'Employment duration', employer_name: 'Employer / business name', employer_sector: 'Employer sector', job_title: 'Job title / occupation', branch_department: 'Branch / department', company_address: 'Company / work address', company_phone: 'Company phone', supervisor_name: 'Supervisor / manager', supervisor_phone: 'Supervisor phone', salary_deduction_allowed: 'Salary deduction allowed', pay_frequency: 'Pay frequency', net_pay: 'Net pay per pay period (JMD)', next_pay_date: 'Next pay date', has_additional_income: 'Additional income', loan_amount: 'Amount requested (JMD)', loan_term: 'Preferred term', loan_purpose: 'Loan purpose', repayment_route: 'Repayment / security route', promo_code: 'Promo code', loan_explanation: 'Loan purpose explanation', has_off_payroll_loans: 'Loans not recorded on payslip', family_ref_name: 'Family reference name', family_ref_phone: 'Family reference phone', family_ref_relationship: 'Family reference relationship', family_ref_address: 'Family reference address', other_ref_name: 'Non-family reference name', other_ref_phone: 'Non-family reference phone', other_ref_relationship: 'Non-family reference relationship', other_ref_address: 'Non-family reference address', documents: 'Documents ready', terms_accepted: 'Terms and privacy accepted', marketing_consent: 'Marketing consent' };
+  const labels = { created_at: 'Submitted', status: 'Application status', first_name: 'First name', middle_name: 'Middle name', last_name: 'Last name', date_of_birth: 'Date of birth', trn: 'TRN', id_type: 'ID type', phone: 'Mobile number', other_phone: 'Other phone', email: 'Email address', home_address: 'Home address', town: 'Town / city', parish: 'Parish', residence: 'Residence', time_at_address: 'Time at this address', employment_status: 'Employment status', employment_duration: 'Employment duration', employer_name: 'Employer / business name', employer_sector: 'Employer sector', job_title: 'Job title / occupation', branch_department: 'Branch / department', company_address: 'Company / work address', company_phone: 'Company phone', supervisor_name: 'Supervisor / manager', supervisor_phone: 'Supervisor phone', salary_deduction_allowed: 'Salary deduction allowed', pay_frequency: 'Pay frequency', net_pay: 'Net pay per pay period (JMD)', next_pay_date: 'Next pay date', has_additional_income: 'Additional income', loan_amount: 'Amount requested (JMD)', loan_term: 'Preferred term', loan_purpose: 'Loan purpose', repayment_route: 'Repayment / security route', promo_code: 'Promo code', loan_explanation: 'Loan purpose explanation', has_off_payroll_loans: 'Loans not recorded on payslip', family_ref_name: 'Family reference name', family_ref_phone: 'Family reference phone', family_ref_relationship: 'Family reference relationship', family_ref_address: 'Family reference address', other_ref_name: 'Non-family reference name', other_ref_phone: 'Non-family reference phone', other_ref_relationship: 'Non-family reference relationship', other_ref_address: 'Non-family reference address', documents: 'Documents ready', terms_accepted: 'Terms and privacy accepted', marketing_consent: 'Marketing consent' };
   const fields = document.querySelector('#modal-fields');
   fields.replaceChildren();
   for (const [key, label] of Object.entries(labels)) {
@@ -114,6 +114,47 @@ function showDetails(row) {
     const title = document.createElement('span'); title.textContent = label;
     const detail = document.createElement('strong'); detail.textContent = String(value);
     item.append(title, detail); fields.append(item);
+  }
+  if (Array.isArray(row.uploaded_documents) && row.uploaded_documents.length) {
+    const heading = document.createElement('h3');
+    heading.className = 'uploaded-heading';
+    heading.textContent = 'Uploaded documents';
+    fields.append(heading);
+    for (const file of row.uploaded_documents) {
+      const wrap = document.createElement('div');
+      wrap.className = 'uploaded-file';
+      const name = document.createElement('strong');
+      name.textContent = file.name || 'Uploaded document';
+      const action = document.createElement('button');
+      action.type = 'button';
+      action.className = 'document-link-button';
+      action.textContent = 'Create secure download link';
+      action.addEventListener('click', async () => {
+        action.disabled = true;
+        action.textContent = 'Preparing link…';
+        try {
+          const response = await fetch('/api/document-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+            body: JSON.stringify({ applicationId: row.id, path: file.path })
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error || 'Could not create the document link.');
+          const link = document.createElement('a');
+          link.href = result.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = 'Download document';
+          link.className = 'document-download-link';
+          action.replaceWith(link);
+        } catch (error) {
+          action.textContent = error.message;
+          action.disabled = false;
+        }
+      });
+      wrap.append(name, action);
+      fields.append(wrap);
+    }
   }
   detailsModal.showModal();
 }

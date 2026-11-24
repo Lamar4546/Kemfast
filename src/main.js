@@ -6,6 +6,9 @@ const SEND = document.querySelector('#submit-button');
 const ERROR = document.querySelector('#form-error');
 const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY;
+const UPLOADS = document.querySelector('#document-uploads');
+const MAX_FILE_BYTES = 8 * 1024 * 1024;
+const MAX_FILE_COUNT = 8;
 const STEP_LABELS = ['Personal & address', 'Employment & income', 'Loan request', 'References & documents'];
 let currentStep = 0;
 
@@ -40,26 +43,76 @@ NEXT.addEventListener('click', () => {
 });
 BACK.addEventListener('click', () => { currentStep = Math.max(currentStep - 1, 0); updateStep(); });
 
+function selectedFiles() {
+  const files = [...UPLOADS.files];
+  if (files.length > MAX_FILE_COUNT) throw new Error(`Choose no more than ${MAX_FILE_COUNT} documents.`);
+  for (const file of files) {
+    if (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) throw new Error('Choose PDF, JPG, or PNG documents only.');
+    if (file.size > MAX_FILE_BYTES) throw new Error('Each document must be 8 MB or smaller.');
+  }
+  return files;
+}
+
+UPLOADS.addEventListener('change', () => {
+  const list = document.querySelector('#upload-list');
+  try {
+    const files = selectedFiles();
+    list.classList.remove('upload-error');
+    list.textContent = files.length ? `${files.length} optional ${files.length === 1 ? 'file' : 'files'} selected: ${files.map(file => file.name).join(', ')}` : 'No files selected.';
+  } catch (error) {
+    UPLOADS.value = '';
+    list.textContent = error.message;
+    list.classList.add('upload-error');
+  }
+});
+
+async function uploadDocuments(files, applicationId) {
+  const uploads = [];
+  for (const file of files) {
+    const signResponse = await fetch('/api/document-upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ applicationId, fileName: file.name, contentType: file.type, size: file.size })
+    });
+    const signed = await signResponse.json().catch(() => ({}));
+    if (!signResponse.ok) throw new Error(signed.error || 'Could not prepare a secure document upload.');
+    const uploadResponse = await fetch(signed.uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type, apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+      body: file
+    });
+    if (!uploadResponse.ok) throw new Error(`Could not upload “${file.name}”. You can remove the file and submit without uploads.`);
+    uploads.push({ path: signed.path, name: signed.name, content_type: signed.contentType, size: signed.size });
+  }
+  return uploads;
+}
+
 FORM.addEventListener('submit', async event => {
   event.preventDefault();
   if (!validateStep()) return;
+  let files;
+  try { files = selectedFiles(); }
+  catch (error) { ERROR.textContent = error.message; ERROR.hidden = false; return; }
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     ERROR.textContent = 'The application service is not connected yet. Please call (876) 790-7674 for assistance.';
     ERROR.hidden = false;
     return;
   }
   SEND.disabled = true;
-  SEND.textContent = 'Sending…';
+  SEND.textContent = files.length ? 'Uploading & sending…' : 'Sending…';
   ERROR.hidden = true;
   const data = new FormData(FORM);
   const values = Object.fromEntries(data.entries());
   values.documents = data.getAll('documents');
+  delete values.document_uploads;
   values.terms_accepted = true;
   delete values.consent;
   values.marketing_consent = data.has('marketing_consent');
   values.net_pay = Number(values.net_pay);
   values.loan_amount = Number(values.loan_amount);
   try {
+    values.id = crypto.randomUUID();
+    values.uploaded_documents = await uploadDocuments(files, values.id);
     const response = await fetch(`${SUPABASE_URL}/rest/v1/loan_applications`, {
       method: 'POST',
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -81,6 +134,7 @@ FORM.addEventListener('submit', async event => {
 
 document.querySelector('#new-application').addEventListener('click', () => {
   FORM.reset(); FORM.hidden = false; document.querySelector('#success-panel').hidden = true;
+  document.querySelector('#upload-list').textContent = '';
   currentStep = 0; SEND.disabled = false; SEND.innerHTML = 'Submit application <span>→</span>'; updateStep();
 });
 
@@ -93,3 +147,12 @@ const dob = FORM.elements.date_of_birth;
 const adultCutoff = new Date(); adultCutoff.setFullYear(adultCutoff.getFullYear() - 18);
 dob.max = adultCutoff.toISOString().slice(0, 10);
 updateStep();
+
+const offer = document.querySelector('#qr-offer');
+const params = new URLSearchParams(window.location.search);
+if ((params.get('source') || params.get('utm_source') || '').toLowerCase() === 'qr') {
+  window.setTimeout(() => offer.showModal(), 350);
+}
+document.querySelector('#close-offer').addEventListener('click', () => offer.close());
+document.querySelector('#offer-apply').addEventListener('click', () => offer.close());
+offer.addEventListener('click', event => { if (event.target === offer) offer.close(); });

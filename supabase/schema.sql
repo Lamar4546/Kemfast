@@ -51,6 +51,7 @@ create table if not exists public.loan_applications (
   other_ref_relationship text not null,
   other_ref_address text not null,
   documents text[] not null default '{}',
+  uploaded_documents jsonb not null default '[]'::jsonb check (jsonb_typeof(uploaded_documents) = 'array'),
   terms_accepted boolean not null default true,
   marketing_consent boolean not null default false
 );
@@ -97,7 +98,25 @@ alter table public.loan_applications
   add column if not exists other_ref_relationship text,
   add column if not exists other_ref_address text,
   add column if not exists documents text[] not null default '{}',
+  add column if not exists uploaded_documents jsonb not null default '[]'::jsonb,
   add column if not exists terms_accepted boolean not null default true;
+
+-- Keep applicant files private. Uploads are made through short-lived signed URLs.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('loan-documents', 'loan-documents', false, 8388608, array['application/pdf','image/jpeg','image/png'])
+on conflict (id) do update set
+  name = excluded.name,
+  public = false,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'loan_applications_uploaded_documents_array') then
+    alter table public.loan_applications add constraint loan_applications_uploaded_documents_array
+      check (jsonb_typeof(uploaded_documents) = 'array');
+  end if;
+end $$;
 
 do $$
 begin

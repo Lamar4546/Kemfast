@@ -107,7 +107,9 @@
                 <label><input type="checkbox" name="documents" value="2 months bank statements" /><span>2 months bank statements</span></label>
                 <label><input type="checkbox" name="documents" value="Work ID" /><span>Work ID (if available)</span></label>
               </div>
-              <p class="document-note">If you do not have proof of address, contact Kemlan about field verification and any applicable fee. Send documents only through a Kemlan approved channel.</p>
+              <label class="optional-upload field-wide"><span>Upload copies (optional)</span><input id="document-uploads" name="document_uploads" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" /><small>PDF, JPG or PNG · up to 8 files · 8 MB each. You can submit without uploading.</small></label>
+              <p id="upload-list" class="upload-list field-wide" aria-live="polite"></p>
+              <p class="document-note">Uploading is optional. Only upload documents you are comfortable sharing for this application. If you do not have proof of address, contact Kemlan about field verification and any applicable fee.</p>
               <label class="consent"><input type="checkbox" name="consent" required /><span>I confirm that the information above is accurate and agree to the <a href="https://kemlanfinancing.com/terms-conditions.php" target="_blank" rel="noreferrer">Terms and Conditions</a> and <a href="https://kemlanfinancing.com/privacy-policy.php" target="_blank" rel="noreferrer">Privacy Policy</a>. <b>*</b></span></label>
               <label class="consent marketing"><input type="checkbox" name="marketing_consent" /><span>I consent to receive marketing communications from Kemlan Financing.</span></label>
             </div>
@@ -120,5 +122,6 @@
       <section class="bottom-cta"><div><span class="bottom-kicker">OPPORTUNITY STARTS HERE</span><h2>Let’s find a way forward.</h2><p>Payday · Personal · Collateral · Business loans</p></div><a class="button button-white" href="tel:+18767907674">Talk to our team <span>↗</span></a></section>
     </main>
     <footer><a class="footer-logo" href="#top"><img src="./kemlan-logo.png" alt="Kemlan Financing" /></a><span>Suite 5, 9A Garelli Avenue, New Kingston, Jamaica</span><a href="tel:+18767907674">(876) 790-7674</a><a href="mailto:info@kemlanfinancing.com">info@kemlanfinancing.com</a><span>Mon–Fri 8:30 AM–4:00 PM</span><span>© 2026 Kemlan Financing Limited</span></footer>
+    <dialog id="qr-offer" class="offer-dialog" aria-labelledby="offer-title"><button id="close-offer" class="offer-close" type="button" aria-label="Close offer">×</button><div class="offer-mark" aria-hidden="true">K</div><p class="offer-kicker">A QR VISITOR OFFER</p><h2 id="offer-title">A little extra help with your application.</h2><p>You may be eligible for up to <strong>5% off processing fees.</strong> Ask our team to confirm your eligibility.</p><a class="button button-primary" href="#application" id="offer-apply">Start your application <span>→</span></a><small>Offer applies to processing fees only. Eligibility is confirmed by Kemlan Financing.</small></dialog>
   </body>
 </html>
