@@ -37,7 +37,6 @@ async function loadApplications() {
   document.querySelector('#new-count').textContent = applications.filter(row => !row.status || row.status === 'new').length;
   document.querySelector('#pending-count').textContent = applications.filter(row => row.status === 'pending_approval').length;
   document.querySelector('#approved-count').textContent = applications.filter(row => row.status === 'approved').length;
-  document.querySelector('#qr-count').textContent = applications.filter(row => applicationSource(row) === 'qr').length;
   const totals = {
     new: applications.filter(row => !row.status || row.status === 'new').length,
     pending: applications.filter(row => row.status === 'pending_approval').length,
