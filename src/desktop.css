@@ -55,8 +55,7 @@
 .offer-amount{position:relative;display:flex;min-height:154px;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;border-radius:15px;background:linear-gradient(125deg,#e1f1ec 0%,#e9f3f5 50%,#f5e9f1 100%);color:#075b4f}
 .offer-amount::before,.offer-amount::after{position:absolute;color:#10a99d;font-size:22px;content:"✦"}
 .offer-amount::before{left:18px;top:20px}.offer-amount::after{right:18px;bottom:17px;font-size:19px}
-.offer-amount>span{font-size:10px;font-weight:900;letter-spacing:.2em}
-.offer-amount>strong{font-size:clamp(64px,17vw,78px);font-weight:900;letter-spacing:-.075em;line-height:.98}
+.offer-amount>strong{font-size:clamp(52px,14vw,66px);font-weight:900;letter-spacing:-.075em;line-height:.98}
 .offer-amount>b{margin-top:4px;color:#123346;font-size:23px;letter-spacing:-.04em}
 .offer-dialog>.offer-confetti{position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none}
 .offer-dialog>:not(.offer-confetti):not(.offer-close){position:relative;z-index:2}
