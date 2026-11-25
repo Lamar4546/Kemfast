@@ -158,8 +158,24 @@ dob.max = adultCutoff.toISOString().slice(0, 10);
 updateStep();
 
 const offer = document.querySelector('#qr-offer');
+function celebrateOffer() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const confetti = offer.querySelector('.offer-confetti');
+  const colors = ['#075b7e', '#11a89d', '#f4b942', '#f17b63', '#75c8dc'];
+  confetti.replaceChildren(...Array.from({ length: 44 }, () => {
+    const piece = document.createElement('i');
+    piece.style.setProperty('--x', `${Math.random() * 100}%`);
+    piece.style.setProperty('--delay', `${Math.random() * 0.65}s`);
+    piece.style.setProperty('--duration', `${1.7 + Math.random() * 0.9}s`);
+    piece.style.setProperty('--turn', `${Math.random() * 600 - 300}deg`);
+    piece.style.setProperty('--piece-color', colors[Math.floor(Math.random() * colors.length)]);
+    piece.className = Math.random() > 0.5 ? 'confetti-ribbon' : 'confetti-dot';
+    return piece;
+  }));
+  window.setTimeout(() => confetti.replaceChildren(), 2900);
+}
 if (APPLICATION_SOURCE === 'qr') {
-  window.setTimeout(() => offer.showModal(), 350);
+  window.setTimeout(() => { offer.showModal(); celebrateOffer(); }, 350);
 }
 document.querySelector('#close-offer').addEventListener('click', () => offer.close());
 document.querySelector('#offer-apply').addEventListener('click', () => offer.close());
