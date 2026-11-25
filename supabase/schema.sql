@@ -6,6 +6,7 @@ create table if not exists public.loan_applications (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   status text not null default 'new' check (status in ('new','pending_approval','approved')),
+  application_source text not null default 'website',
   first_name text not null,
   middle_name text,
   last_name text not null,
@@ -71,6 +72,7 @@ end $$;
 
 alter table public.loan_applications
   add column if not exists status text not null default 'new',
+  add column if not exists application_source text not null default 'unknown',
   add column if not exists middle_name text,
   add column if not exists id_type text,
   add column if not exists other_phone text,
@@ -100,6 +102,16 @@ alter table public.loan_applications
   add column if not exists documents text[] not null default '{}',
   add column if not exists uploaded_documents jsonb not null default '[]'::jsonb,
   add column if not exists terms_accepted boolean not null default true;
+
+alter table public.loan_applications alter column application_source set default 'website';
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'loan_applications_application_source_check') then
+    alter table public.loan_applications add constraint loan_applications_application_source_check
+      check (application_source in ('qr','website','unknown'));
+  end if;
+end $$;
 
 -- Keep applicant files private. Uploads are made through short-lived signed URLs.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

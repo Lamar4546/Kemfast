@@ -11,6 +11,9 @@ const UPLOAD_LIST = document.querySelector('#upload-list');
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_FILE_COUNT = 8;
 const STEP_LABELS = ['Personal & address', 'Employment & income', 'Loan request', 'References & documents'];
+const SOURCE_PARAMS = new URLSearchParams(window.location.search);
+const APPLICATION_SOURCE = [SOURCE_PARAMS.get('source'), SOURCE_PARAMS.get('utm_source')]
+  .some(value => value?.toLowerCase() === 'qr') ? 'qr' : 'website';
 let currentStep = 0;
 
 function updateStep() {
@@ -111,6 +114,7 @@ FORM.addEventListener('submit', async event => {
   values.documents = data.getAll('documents');
   delete values.document_uploads;
   values.terms_accepted = true;
+  values.application_source = APPLICATION_SOURCE;
   delete values.consent;
   values.marketing_consent = data.has('marketing_consent');
   values.net_pay = Number(values.net_pay);
@@ -154,8 +158,7 @@ dob.max = adultCutoff.toISOString().slice(0, 10);
 updateStep();
 
 const offer = document.querySelector('#qr-offer');
-const params = new URLSearchParams(window.location.search);
-if ((params.get('source') || params.get('utm_source') || '').toLowerCase() === 'qr') {
+if (APPLICATION_SOURCE === 'qr') {
   window.setTimeout(() => offer.showModal(), 350);
 }
 document.querySelector('#close-offer').addEventListener('click', () => offer.close());

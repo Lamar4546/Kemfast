@@ -15,24 +15,46 @@ let accessToken = null;
 function showError(message) { errorBox.textContent = message; errorBox.hidden = false; }
 function setSignedIn(signedIn) { loginPanel.hidden = signedIn; dashboard.hidden = !signedIn; signout.hidden = !signedIn; }
 function dateLabel(date) { return new Intl.DateTimeFormat('en-JM', { dateStyle: 'medium' }).format(new Date(date)); }
+function dateTimeLabel(date) { return new Intl.DateTimeFormat('en-JM', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(date)); }
 function safe(value) { const span = document.createElement('span'); span.textContent = value ?? ''; return span.innerHTML; }
+function applicationSource(row) {
+  if (row.application_source === 'qr' || row.application_source === 'website') return row.application_source;
+  return 'unknown';
+}
 
 async function loadApplications() {
-  const response = await fetch(`${URL}/rest/v1/loan_applications?select=*&order=created_at.desc&limit=200`, {
+  const response = await fetch(`${URL}/rest/v1/loan_applications?select=*&order=created_at.desc&limit=1000`, {
     headers: { apikey: KEY, Authorization: `Bearer ${accessToken}` }
   });
   if (!response.ok) throw new Error(response.status === 403 ? 'Your account does not have permission to view applications.' : 'Could not load applications. Please try again.');
   const applications = await response.json();
   document.querySelector('#total-count').textContent = applications.length;
   document.querySelector('#new-count').textContent = applications.filter(row => !row.status || row.status === 'new').length;
+  document.querySelector('#pending-count').textContent = applications.filter(row => row.status === 'pending_approval').length;
+  document.querySelector('#approved-count').textContent = applications.filter(row => row.status === 'approved').length;
+  document.querySelector('#qr-count').textContent = applications.filter(row => applicationSource(row) === 'qr').length;
+  const totals = {
+    new: applications.filter(row => !row.status || row.status === 'new').length,
+    pending: applications.filter(row => row.status === 'pending_approval').length,
+    approved: applications.filter(row => row.status === 'approved').length
+  };
+  for (const [key, count] of Object.entries(totals)) {
+    document.querySelector(`#breakdown-${key}-count`).textContent = count;
+    document.querySelector(`#breakdown-${key}-bar`).style.width = `${applications.length ? (count / applications.length) * 100 : 0}%`;
+  }
+  document.querySelector('#qr-overview-count').textContent = applications.filter(row => applicationSource(row) === 'qr').length;
   const body = document.querySelector('#applications-body');
   body.replaceChildren();
   document.querySelector('#empty-state').hidden = applications.length > 0;
   for (const row of applications) {
     const tr = document.createElement('tr');
     const status = row.status || 'new';
+    const source = applicationSource(row);
     tr.dataset.status = status;
-    tr.innerHTML = `<td><strong>${safe(row.first_name)} ${safe(row.last_name)}</strong><small>${safe(row.parish)} · ${safe(row.town)}</small></td><td><strong>${safe(row.phone)}</strong><small>${safe(row.email)}</small></td><td><strong>JMD $${Number(row.loan_amount).toLocaleString('en-JM')}</strong><small>${safe(row.loan_purpose)} · ${safe(row.loan_term)}</small></td><td><strong>${safe(row.employer_name)}</strong><small>${safe(row.job_title)}</small></td><td>${safe(dateLabel(row.created_at))}</td><td><span class="status-badge status-${safe(status)}">${safe(statusLabel(status))}</span></td><td class="row-actions"><select class="status-select" aria-label="Update status for ${safe(row.first_name)} ${safe(row.last_name)}"><option value="new" ${status === 'new' ? 'selected' : ''}>New</option><option value="pending_approval" ${status === 'pending_approval' ? 'selected' : ''}>Pending approval</option><option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option></select><button type="button" class="delete-application" aria-label="Delete application for ${safe(row.first_name)} ${safe(row.last_name)}">Delete</button></td>`;
+    tr.dataset.source = source;
+    tr.dataset.submitted = localDateKey(row.created_at);
+    const reference = String(row.id || '').slice(0, 8).toUpperCase();
+    tr.innerHTML = `<td><strong class="application-reference">${safe(reference)}</strong></td><td><strong>${safe([row.first_name, row.middle_name, row.last_name].filter(Boolean).join(' '))}</strong><small>${safe(row.parish)} · ${safe(row.town)}</small></td><td><strong>${safe(row.phone)}</strong><small>${safe(row.email)}</small></td><td><strong>JMD $${Number(row.loan_amount).toLocaleString('en-JM')}</strong><small>${safe(row.loan_purpose)} · ${safe(row.loan_term)}</small></td><td><span class="source-badge source-${source}">${source === 'qr' ? 'QR code' : source === 'website' ? 'Website' : 'Not recorded'}</span></td><td>${safe(dateTimeLabel(row.created_at))}</td><td><span class="status-badge status-${safe(status)}">${safe(statusLabel(status))}</span></td><td class="row-actions"><select class="status-select" aria-label="Update status for ${safe(row.first_name)} ${safe(row.last_name)}"><option value="new" ${status === 'new' ? 'selected' : ''}>New</option><option value="pending_approval" ${status === 'pending_approval' ? 'selected' : ''}>Pending approval</option><option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option></select><button type="button" class="delete-application" aria-label="Delete application for ${safe(row.first_name)} ${safe(row.last_name)}">Delete</button></td>`;
     tr.tabIndex = 0;
     tr.setAttribute('aria-label', `View ${row.first_name} ${row.last_name} application details`);
     tr.addEventListener('click', event => { if (!event.target.closest('.row-actions')) showDetails(row); });
@@ -50,17 +72,27 @@ async function loadApplications() {
 function filterApplications() {
   const query = document.querySelector('#application-search').value.trim().toLowerCase();
   const status = document.querySelector('#status-filter').value;
+  const source = document.querySelector('#source-filter').value;
+  const fromDate = document.querySelector('#from-date').value;
+  const toDate = document.querySelector('#to-date').value;
   let visible = 0;
   for (const row of document.querySelectorAll('#applications-body tr')) {
     const matchesQuery = !query || row.textContent.toLowerCase().includes(query);
     const matchesStatus = status === 'all' || row.dataset.status === status;
-    row.hidden = !(matchesQuery && matchesStatus);
+    const matchesSource = source === 'all' || row.dataset.source === source;
+    const matchesDate = (!fromDate || row.dataset.submitted >= fromDate) && (!toDate || row.dataset.submitted <= toDate);
+    row.hidden = !(matchesQuery && matchesStatus && matchesSource && matchesDate);
     if (!row.hidden) visible++;
   }
   const empty = document.querySelector('#empty-state');
   empty.hidden = visible > 0;
   if (document.querySelectorAll('#applications-body tr').length && visible === 0) empty.textContent = 'No applications match these filters.';
   else empty.textContent = 'No applications yet. New submissions will appear here.';
+}
+
+function localDateKey(date) {
+  const value = new Date(date);
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
 }
 
 function statusLabel(status) {
@@ -102,19 +134,47 @@ async function deleteApplication(row, button) {
   }
 }
 
+const FIELD_LABELS = { created_at: 'Submitted', status: 'Application status', application_source: 'Application source', id: 'Application ID', first_name: 'First name', middle_name: 'Middle name', last_name: 'Last name', date_of_birth: 'Date of birth', trn: 'TRN', id_type: 'ID type', phone: 'Mobile number', other_phone: 'Other phone', email: 'Email address', home_address: 'Home address', town: 'Town / city', parish: 'Parish', residence: 'Residence', time_at_address: 'Time at this address', employment_status: 'Employment status', employment_duration: 'Employment duration', employer_name: 'Employer / business name', employer_sector: 'Employer sector', job_title: 'Job title / occupation', branch_department: 'Branch / department', company_address: 'Company / work address', company_phone: 'Company phone', supervisor_name: 'Supervisor / manager', supervisor_phone: 'Supervisor phone', salary_deduction_allowed: 'Salary deduction allowed', pay_frequency: 'Pay frequency', net_pay: 'Net pay per pay period (JMD)', next_pay_date: 'Next pay date', has_additional_income: 'Additional income', loan_amount: 'Amount requested (JMD)', loan_term: 'Preferred term', loan_purpose: 'Loan purpose', repayment_route: 'Repayment / security route', promo_code: 'Promo code', loan_explanation: 'Loan purpose explanation', has_off_payroll_loans: 'Loans not recorded on payslip', family_ref_name: 'Family reference name', family_ref_phone: 'Family reference phone', family_ref_relationship: 'Family reference relationship', family_ref_address: 'Family reference address', other_ref_name: 'Non-family reference name', other_ref_phone: 'Non-family reference phone', other_ref_relationship: 'Non-family reference relationship', other_ref_address: 'Non-family reference address', documents: 'Documents ready', terms_accepted: 'Terms and privacy accepted', marketing_consent: 'Marketing consent' };
+const DETAIL_GROUPS = [
+  ['Personal details', ['first_name', 'middle_name', 'last_name', 'date_of_birth', 'trn', 'id_type', 'phone', 'other_phone', 'email']],
+  ['Home address', ['home_address', 'town', 'parish', 'residence', 'time_at_address']],
+  ['Employment and income', ['employment_status', 'employment_duration', 'employer_name', 'employer_sector', 'job_title', 'branch_department', 'company_address', 'company_phone', 'supervisor_name', 'supervisor_phone', 'salary_deduction_allowed', 'pay_frequency', 'net_pay', 'next_pay_date', 'has_additional_income', 'has_off_payroll_loans']],
+  ['Loan request', ['loan_amount', 'loan_term', 'loan_purpose', 'repayment_route', 'promo_code', 'loan_explanation']],
+  ['References', ['family_ref_name', 'family_ref_phone', 'family_ref_relationship', 'family_ref_address', 'other_ref_name', 'other_ref_phone', 'other_ref_relationship', 'other_ref_address']],
+  ['Documents and consent', ['documents', 'terms_accepted', 'marketing_consent']]
+];
+
+function fieldValue(row, key) {
+  if (key === 'created_at') return dateTimeLabel(row[key]);
+  if (key === 'application_source') return ({ qr: 'QR code', website: 'Website / direct', unknown: 'Not recorded' })[applicationSource(row)];
+  if (key === 'status') return statusLabel(row[key] || 'new');
+  if ((key === 'net_pay' || key === 'loan_amount') && row[key] !== null && row[key] !== undefined) return `JMD $${Number(row[key]).toLocaleString('en-JM')}`;
+  if (Array.isArray(row[key])) return row[key].join(', ') || 'None selected';
+  if (typeof row[key] === 'boolean') return row[key] ? 'Yes' : 'No';
+  return row[key];
+}
+
 function showDetails(row) {
   document.querySelector('#modal-name').textContent = `${row.first_name} ${row.last_name}`;
-  const labels = { created_at: 'Submitted', status: 'Application status', first_name: 'First name', middle_name: 'Middle name', last_name: 'Last name', date_of_birth: 'Date of birth', trn: 'TRN', id_type: 'ID type', phone: 'Mobile number', other_phone: 'Other phone', email: 'Email address', home_address: 'Home address', town: 'Town / city', parish: 'Parish', residence: 'Residence', time_at_address: 'Time at this address', employment_status: 'Employment status', employment_duration: 'Employment duration', employer_name: 'Employer / business name', employer_sector: 'Employer sector', job_title: 'Job title / occupation', branch_department: 'Branch / department', company_address: 'Company / work address', company_phone: 'Company phone', supervisor_name: 'Supervisor / manager', supervisor_phone: 'Supervisor phone', salary_deduction_allowed: 'Salary deduction allowed', pay_frequency: 'Pay frequency', net_pay: 'Net pay per pay period (JMD)', next_pay_date: 'Next pay date', has_additional_income: 'Additional income', loan_amount: 'Amount requested (JMD)', loan_term: 'Preferred term', loan_purpose: 'Loan purpose', repayment_route: 'Repayment / security route', promo_code: 'Promo code', loan_explanation: 'Loan purpose explanation', has_off_payroll_loans: 'Loans not recorded on payslip', family_ref_name: 'Family reference name', family_ref_phone: 'Family reference phone', family_ref_relationship: 'Family reference relationship', family_ref_address: 'Family reference address', other_ref_name: 'Non-family reference name', other_ref_phone: 'Non-family reference phone', other_ref_relationship: 'Non-family reference relationship', other_ref_address: 'Non-family reference address', documents: 'Documents ready', terms_accepted: 'Terms and privacy accepted', marketing_consent: 'Marketing consent' };
   const fields = document.querySelector('#modal-fields');
   fields.replaceChildren();
-  for (const [key, label] of Object.entries(labels)) {
-    const value = key === 'created_at' ? dateLabel(row[key]) : (key === 'net_pay' || key === 'loan_amount') && row[key] !== null ? `JMD $${Number(row[key]).toLocaleString('en-JM')}` : Array.isArray(row[key]) ? row[key].join(', ') || 'None selected' : row[key];
-    if (value === null || value === undefined || value === '') continue;
-    const item = document.createElement('div'); item.className = 'modal-field';
-    const title = document.createElement('span'); title.textContent = label;
-    const detail = document.createElement('strong'); detail.textContent = String(value);
-    item.append(title, detail); fields.append(item);
+  for (const [heading, keys] of DETAIL_GROUPS) {
+    const available = keys.filter(key => row[key] !== null && row[key] !== undefined && row[key] !== '');
+    if (!available.length) continue;
+    const section = document.createElement('section'); section.className = 'detail-section';
+    const title = document.createElement('h3'); title.textContent = heading; section.append(title);
+    const grid = document.createElement('div'); grid.className = 'modal-fields';
+    for (const key of available) {
+      const item = document.createElement('div'); item.className = 'modal-field';
+      const label = document.createElement('span'); label.textContent = FIELD_LABELS[key];
+      const value = document.createElement('strong'); value.textContent = String(fieldValue(row, key));
+      item.append(label, value); grid.append(item);
+    }
+    section.append(grid); fields.append(section);
   }
+  const source = document.createElement('p'); source.className = `details-source source-${applicationSource(row)}`;
+  source.textContent = applicationSource(row) === 'unknown' ? 'Application source was not recorded for this older submission.' : `Application received through ${applicationSource(row) === 'qr' ? 'QR code' : 'website / direct link'}`;
+  fields.prepend(source);
   if (Array.isArray(row.uploaded_documents) && row.uploaded_documents.length) {
     const heading = document.createElement('h3');
     heading.className = 'uploaded-heading';
@@ -157,7 +217,50 @@ function showDetails(row) {
     }
   }
   detailsModal.showModal();
+  document.querySelector('#print-application').onclick = () => printApplication(row);
 }
+
+function printApplication(row) {
+  const sheet = document.querySelector('#print-sheet');
+  sheet.replaceChildren();
+  const header = document.createElement('header'); header.className = 'print-header';
+  const logo = document.createElement('img'); logo.src = '/kemlan-logo.png'; logo.alt = 'Kemlan Financing';
+  const brand = document.createElement('div');
+  const title = document.createElement('h1'); title.textContent = 'Loan application';
+  const ref = document.createElement('p'); ref.textContent = `Application ID: ${row.id}`;
+  brand.append(title, ref); header.append(logo, brand);
+  const summary = document.createElement('div'); summary.className = 'print-summary';
+  for (const [label, value] of [['Applicant', `${row.first_name} ${row.middle_name || ''} ${row.last_name}`.replace(/\s+/g, ' ').trim()], ['Submitted', dateTimeLabel(row.created_at)], ['Status', statusLabel(row.status || 'new')], ['Source', fieldValue(row, 'application_source')]]) {
+    const item = document.createElement('div'); const caption = document.createElement('span'); caption.textContent = label; const text = document.createElement('strong'); text.textContent = value; item.append(caption, text); summary.append(item);
+  }
+  sheet.append(header, summary);
+  for (const [heading, keys] of DETAIL_GROUPS) {
+    const available = keys.filter(key => row[key] !== null && row[key] !== undefined && row[key] !== '');
+    if (!available.length) continue;
+    const section = document.createElement('section'); section.className = 'print-section';
+    const h2 = document.createElement('h2'); h2.textContent = heading; section.append(h2);
+    const grid = document.createElement('dl');
+    for (const key of available) {
+      const pair = document.createElement('div'); const dt = document.createElement('dt'); dt.textContent = FIELD_LABELS[key]; const dd = document.createElement('dd'); dd.textContent = String(fieldValue(row, key)); pair.append(dt, dd); grid.append(pair);
+    }
+    section.append(grid); sheet.append(section);
+  }
+  if (Array.isArray(row.uploaded_documents) && row.uploaded_documents.length) {
+    const uploads = document.createElement('section'); uploads.className = 'print-section';
+    const h2 = document.createElement('h2'); h2.textContent = 'Uploaded documents'; uploads.append(h2);
+    const list = document.createElement('p'); list.textContent = row.uploaded_documents.map(file => [file.document_type, file.name].filter(Boolean).join(' — ')).join('; '); uploads.append(list); sheet.append(uploads);
+  }
+  const declaration = document.createElement('section'); declaration.className = 'print-declaration';
+  const declarationHeading = document.createElement('h2'); declarationHeading.textContent = 'Applicant declaration';
+  const declarationText = document.createElement('p'); declarationText.textContent = 'I confirm the information provided is accurate and agree to the Terms and Conditions and Privacy Policy.';
+  const signature = document.createElement('div'); signature.className = 'signature-lines';
+  signature.innerHTML = '<span>Applicant signature</span><span>Date</span>';
+  declaration.append(declarationHeading, declarationText, signature); sheet.append(declaration);
+  document.body.classList.add('print-mode');
+  window.setTimeout(() => window.print(), 80);
+}
+
+window.addEventListener('afterprint', () => document.body.classList.remove('print-mode'));
 
 async function signInWithToken(token) {
   accessToken = token;
@@ -218,5 +321,20 @@ detailsModal.addEventListener('click', event => { if (event.target === detailsMo
 document.querySelector('#refresh').addEventListener('click', async () => { try { await loadApplications(); } catch (error) { showError(error.message); } });
 document.querySelector('#application-search').addEventListener('input', filterApplications);
 document.querySelector('#status-filter').addEventListener('change', filterApplications);
+document.querySelector('#source-filter').addEventListener('change', filterApplications);
+document.querySelector('#filter-applications').addEventListener('click', filterApplications);
+document.querySelector('#clear-filters').addEventListener('click', () => {
+  document.querySelector('#application-search').value = '';
+  document.querySelector('#status-filter').value = 'all';
+  document.querySelector('#source-filter').value = 'all';
+  document.querySelector('#from-date').value = '';
+  document.querySelector('#to-date').value = '';
+  filterApplications();
+});
+document.querySelector('#view-qr-applications').addEventListener('click', () => {
+  document.querySelector('#source-filter').value = 'qr';
+  filterApplications();
+  document.querySelector('.application-filters').scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
 const session = sessionStorage.getItem('kemlan_admin_session');
 if (session && URL && KEY) signInWithToken(session);

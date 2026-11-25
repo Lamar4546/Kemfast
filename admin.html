@@ -40,6 +40,22 @@
         <div class="stats">
           <div class="stat-card"><span>ALL APPLICATIONS</span><strong id="total-count">—</strong></div>
           <div class="stat-card"><span>NEW ENQUIRIES</span><strong id="new-count">—</strong></div>
+          <div class="stat-card"><span>PENDING REVIEW</span><strong id="pending-count">—</strong></div>
+          <div class="stat-card"><span>APPROVED</span><strong id="approved-count">—</strong></div>
+          <div class="stat-card stat-card-qr"><span>FROM QR CODE</span><strong id="qr-count">—</strong></div>
+        </div>
+        <div class="overview-grid">
+          <section class="overview-card" aria-labelledby="status-overview-title">
+            <h2 id="status-overview-title">Status breakdown</h2>
+            <div class="overview-status"><div><span>New</span><strong id="breakdown-new-count">—</strong></div><div class="overview-track"><span id="breakdown-new-bar"></span></div></div>
+            <div class="overview-status"><div><span>Pending approval</span><strong id="breakdown-pending-count">—</strong></div><div class="overview-track"><span id="breakdown-pending-bar"></span></div></div>
+            <div class="overview-status"><div><span>Approved</span><strong id="breakdown-approved-count">—</strong></div><div class="overview-track"><span id="breakdown-approved-bar"></span></div></div>
+          </section>
+          <section class="overview-card qr-overview" aria-labelledby="qr-overview-title">
+            <div><div class="eyebrow dark-eyebrow">SOURCE TRACKING</div><h2 id="qr-overview-title">QR code applications</h2><p>See which applicants reached the form from the QR code on your printed materials.</p></div>
+            <strong id="qr-overview-count">—</strong>
+            <button id="view-qr-applications" class="button button-outline" type="button">View QR applications →</button>
+          </section>
         </div>
         <div class="dashboard-tools"><button id="toggle-invite" class="button button-outline" type="button" aria-expanded="false">＋ Add staff member</button></div>
         <section class="invite-card" id="invite-card" hidden aria-labelledby="invite-title">
@@ -51,14 +67,24 @@
           <p id="invite-status" class="invite-status" role="status" aria-live="polite"></p>
         </section>
         <div class="table-card">
-          <div class="table-toolbar"><div><h2>Applications</h2><p>Most recent submissions first · Select a row for details</p></div><div class="table-tools"><label class="search-field"><span class="sr-only">Search applications</span><input id="application-search" type="search" placeholder="Search name, phone, email…" /></label><label class="filter-field"><span class="sr-only">Filter applications by status</span><select id="status-filter"><option value="all">All statuses</option><option value="new">New</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option></select></label><button id="refresh" class="refresh-button" type="button">↻ &nbsp; Refresh</button></div></div>
-          <div class="table-scroll"><table><thead><tr><th>Applicant</th><th>Contact</th><th>Loan request</th><th>Employment</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="applications-body"></tbody></table></div>
+          <div class="application-filters" aria-label="Filter applications">
+            <label class="search-field"><span>Search</span><input id="application-search" type="search" placeholder="Name, email, phone…" /></label>
+            <label class="filter-field"><span>Status</span><select id="status-filter"><option value="all">All statuses</option><option value="new">New</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option></select></label>
+            <label class="filter-field"><span>Source</span><select id="source-filter"><option value="all">All sources</option><option value="qr">QR code</option><option value="website">Website / direct</option><option value="unknown">Not recorded</option></select></label>
+            <label class="date-filter"><span>From date</span><input id="from-date" type="date" /></label>
+            <label class="date-filter"><span>To date</span><input id="to-date" type="date" /></label>
+            <button id="filter-applications" class="button button-primary filter-button" type="button">⌕ Filter</button>
+            <button id="clear-filters" class="button button-outline clear-button" type="button">× Clear</button>
+          </div>
+          <div class="table-toolbar"><div><h2>Recent applications</h2><p>Newest submissions first · Select a row to review and print</p></div><button id="refresh" class="refresh-button" type="button">↻ &nbsp; Refresh</button></div>
+          <div class="table-scroll"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Contact</th><th>Loan details</th><th>Source</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="applications-body"></tbody></table></div>
           <div id="empty-state" hidden>No applications yet. New submissions will appear here.</div>
         </div>
         <p class="admin-note">Application records contain personal financial information. Keep access to authorized staff only.</p>
       </section>
-      <dialog id="details-modal"><div class="modal-head"><div><div class="eyebrow dark-eyebrow">APPLICATION DETAILS</div><h2 id="modal-name"></h2></div><button id="close-modal" class="close-modal" type="button" aria-label="Close">×</button></div><div id="modal-fields" class="modal-fields"></div></dialog>
+      <dialog id="details-modal"><div class="modal-head"><div><div class="eyebrow dark-eyebrow">APPLICATION DETAILS</div><h2 id="modal-name"></h2></div><div class="modal-head-actions"><button id="print-application" class="button button-primary" type="button">Print application</button><button id="close-modal" class="close-modal" type="button" aria-label="Close">×</button></div></div><div id="modal-fields" class="modal-fields"></div></dialog>
     </main>
+    <section id="print-sheet" aria-hidden="true"></section>
     <footer><a class="brand footer-brand" href="/"><img src="/kemlan-logo.png" alt="Kemlan Financing" /></a><span>Authorized staff only</span><span>© 2026 Kemlan Financing Limited</span></footer>
   </body>
 </html>
