@@ -1,6 +1,7 @@
 const json = (res, status, body) => {
   res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8').send(JSON.stringify(body));
 };
+const privilegedHeaders = key => key.startsWith('sb_secret_') ? { apikey: key } : { apikey: key, Authorization: `Bearer ${key}` };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -10,9 +11,9 @@ export default async function handler(req, res) {
 
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const anonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !anonKey || !serviceKey) {
-    return json(res, 503, { error: 'Staff invitations are not configured on this deployment.' });
+    return json(res, 503, { error: 'Add SUPABASE_URL, SUPABASE_ANON_KEY, and the server-only SUPABASE_SECRET_KEY to Vercel, then redeploy. The legacy SUPABASE_SERVICE_ROLE_KEY is also supported.' });
   }
 
   const bearer = req.headers.authorization || '';
@@ -33,7 +34,7 @@ export default async function handler(req, res) {
     const currentUser = await userResponse.json();
 
     const allowlistResponse = await fetch(`${base}/rest/v1/admin_users?select=user_id&user_id=eq.${encodeURIComponent(currentUser.id)}&limit=1`, {
-      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` }
+      headers: privilegedHeaders(serviceKey)
     });
     if (!allowlistResponse.ok) return json(res, 502, { error: 'Could not verify staff permissions.' });
     const allowlist = await allowlistResponse.json();
@@ -41,7 +42,7 @@ export default async function handler(req, res) {
 
     const inviteResponse = await fetch(`${base}/auth/v1/invite`, {
       method: 'POST',
-      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+      headers: { ...privilegedHeaders(serviceKey), 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
     const inviteData = await inviteResponse.json().catch(() => ({}));
@@ -56,8 +57,7 @@ export default async function handler(req, res) {
     const grantResponse = await fetch(`${base}/rest/v1/admin_users`, {
       method: 'POST',
       headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
+        ...privilegedHeaders(serviceKey),
         'Content-Type': 'application/json',
         Prefer: 'return=minimal'
       },

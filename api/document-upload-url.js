@@ -2,6 +2,7 @@ const BUCKET = 'loan-documents';
 const MAX_BYTES = 8 * 1024 * 1024;
 const DOCUMENT_TYPES = new Set(['Government ID', 'TRN', 'Recent photograph', 'Proof of address / JP letter', '3 months payslips', '2 months bank statements', 'Work ID']);
 const json = (res, status, body) => res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8').send(JSON.stringify(body));
+const privilegedHeaders = key => key.startsWith('sb_secret_') ? { apikey: key } : { apikey: key, Authorization: `Bearer ${key}` };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,8 +10,8 @@ export default async function handler(req, res) {
     return json(res, 405, { error: 'Method not allowed.' });
   }
   const base = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!base || !serviceKey) return json(res, 503, { error: 'Document uploads are not configured yet.' });
+  const serviceKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!base || !serviceKey) return json(res, 503, { error: 'Add SUPABASE_URL and the server-only SUPABASE_SECRET_KEY to Vercel, then redeploy. The legacy SUPABASE_SERVICE_ROLE_KEY is also supported.' });
 
   const { applicationId, fileName, contentType, size, documentType } = req.body || {};
   if (typeof applicationId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(applicationId)) return json(res, 400, { error: 'Invalid application reference.' });
@@ -28,7 +29,7 @@ export default async function handler(req, res) {
   try {
     const response = await fetch(`${base}/storage/v1/object/upload/sign/${BUCKET}/${path}`, {
       method: 'POST',
-      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+      headers: { ...privilegedHeaders(serviceKey), 'Content-Type': 'application/json' },
       body: JSON.stringify({})
     });
     const result = await response.json().catch(() => ({}));
