@@ -13,7 +13,12 @@ const inviteToggle = document.querySelector('#toggle-invite');
 let accessToken = null;
 
 function showError(message) { errorBox.textContent = message; errorBox.hidden = false; }
-function setSignedIn(signedIn) { loginPanel.hidden = signedIn; dashboard.hidden = !signedIn; signout.hidden = !signedIn; }
+function setSignedIn(signedIn) {
+  loginPanel.hidden = signedIn;
+  dashboard.hidden = !signedIn;
+  signout.hidden = !signedIn;
+  document.body.classList.toggle('admin-signed-in', signedIn);
+}
 function dateLabel(date) { return new Intl.DateTimeFormat('en-JM', { dateStyle: 'medium' }).format(new Date(date)); }
 function dateTimeLabel(date) { return new Intl.DateTimeFormat('en-JM', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(date)); }
 function safe(value) { const span = document.createElement('span'); span.textContent = value ?? ''; return span.innerHTML; }
@@ -334,7 +339,25 @@ document.querySelector('#clear-filters').addEventListener('click', () => {
 document.querySelector('#view-qr-applications').addEventListener('click', () => {
   document.querySelector('#source-filter').value = 'qr';
   filterApplications();
+  setActiveNavigation('qr');
   document.querySelector('.application-filters').scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+function setActiveNavigation(active) {
+  document.querySelectorAll('.sidebar-nav [data-dashboard-filter]').forEach(button => {
+    button.classList.toggle('active', button.dataset.dashboardFilter === active && (active !== 'all' || button.textContent.includes('All applications')));
+  });
+}
+document.querySelectorAll('.sidebar-nav [data-dashboard-filter]').forEach(button => button.addEventListener('click', () => {
+  const value = button.dataset.dashboardFilter;
+  document.querySelector('#status-filter').value = ['new', 'pending_approval', 'approved'].includes(value) ? value : 'all';
+  document.querySelector('#source-filter').value = value === 'qr' ? 'qr' : 'all';
+  filterApplications();
+  document.querySelectorAll('.sidebar-nav [data-dashboard-filter]').forEach(item => item.classList.toggle('active', item === button));
+  if (value !== 'all' || button.textContent.includes('All applications')) document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}));
+document.querySelector('#sidebar-staff').addEventListener('click', () => {
+  if (inviteCard.hidden) inviteToggle.click();
+  inviteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 const session = sessionStorage.getItem('kemlan_admin_session');
 if (session && URL && KEY) signInWithToken(session);
