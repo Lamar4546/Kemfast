@@ -124,7 +124,7 @@ function showDetails(row) {
       const wrap = document.createElement('div');
       wrap.className = 'uploaded-file';
       const name = document.createElement('strong');
-      name.textContent = file.name || 'Uploaded document';
+      name.textContent = [file.document_type, file.name].filter(Boolean).join(' · ') || 'Uploaded document';
       const action = document.createElement('button');
       action.type = 'button';
       action.className = 'document-link-button';

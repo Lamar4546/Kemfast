@@ -6,7 +6,8 @@ const SEND = document.querySelector('#submit-button');
 const ERROR = document.querySelector('#form-error');
 const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY;
-const UPLOADS = document.querySelector('#document-uploads');
+const UPLOAD_INPUTS = [...document.querySelectorAll('.document-upload input[type="file"]')];
+const UPLOAD_LIST = document.querySelector('#upload-list');
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_FILE_COUNT = 8;
 const STEP_LABELS = ['Personal & address', 'Employment & income', 'Loan request', 'References & documents'];
@@ -44,35 +45,39 @@ NEXT.addEventListener('click', () => {
 BACK.addEventListener('click', () => { currentStep = Math.max(currentStep - 1, 0); updateStep(); });
 
 function selectedFiles() {
-  const files = [...UPLOADS.files];
+  const files = UPLOAD_INPUTS.flatMap(input => [...input.files].map(file => ({ file, documentType: input.closest('.document-upload').dataset.documentType })));
   if (files.length > MAX_FILE_COUNT) throw new Error(`Choose no more than ${MAX_FILE_COUNT} documents.`);
-  for (const file of files) {
-    if (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) throw new Error('Choose PDF, JPG, or PNG documents only.');
+  for (const { file, documentType } of files) {
+    const extension = file.name.split('.').pop().toLowerCase();
+    const isPdf = extension === 'pdf' && file.type === 'application/pdf';
+    const isJpg = ['jpg', 'jpeg'].includes(extension) && file.type === 'image/jpeg';
+    if (documentType === '2 months bank statements' ? !isPdf : !(isPdf || isJpg)) {
+      throw new Error(documentType === '2 months bank statements' ? 'Bank statements must be uploaded as PDF files.' : 'Use PDF or JPG files only.');
+    }
     if (file.size > MAX_FILE_BYTES) throw new Error('Each document must be 8 MB or smaller.');
   }
   return files;
 }
 
-UPLOADS.addEventListener('change', () => {
-  const list = document.querySelector('#upload-list');
+UPLOAD_INPUTS.forEach(input => input.addEventListener('change', () => {
   try {
     const files = selectedFiles();
-    list.classList.remove('upload-error');
-    list.textContent = files.length ? `${files.length} optional ${files.length === 1 ? 'file' : 'files'} selected: ${files.map(file => file.name).join(', ')}` : 'No files selected.';
+    UPLOAD_LIST.classList.remove('upload-error');
+    UPLOAD_LIST.textContent = files.length ? `${files.length} optional ${files.length === 1 ? 'file' : 'files'} selected: ${files.map(({ file, documentType }) => `${documentType} — ${file.name}`).join('; ')}` : '';
   } catch (error) {
-    UPLOADS.value = '';
-    list.textContent = error.message;
-    list.classList.add('upload-error');
+    input.value = '';
+    UPLOAD_LIST.textContent = error.message;
+    UPLOAD_LIST.classList.add('upload-error');
   }
-});
+}));
 
 async function uploadDocuments(files, applicationId) {
   const uploads = [];
-  for (const file of files) {
+  for (const { file, documentType } of files) {
     const signResponse = await fetch('/api/document-upload-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ applicationId, fileName: file.name, contentType: file.type, size: file.size })
+      body: JSON.stringify({ applicationId, fileName: file.name, contentType: file.type, size: file.size, documentType })
     });
     const signed = await signResponse.json().catch(() => ({}));
     if (!signResponse.ok) throw new Error(signed.error || 'Could not prepare a secure document upload.');
@@ -82,7 +87,7 @@ async function uploadDocuments(files, applicationId) {
       body: file
     });
     if (!uploadResponse.ok) throw new Error(`Could not upload “${file.name}”. You can remove the file and submit without uploads.`);
-    uploads.push({ path: signed.path, name: signed.name, content_type: signed.contentType, size: signed.size });
+    uploads.push({ path: signed.path, name: signed.name, document_type: signed.documentType, content_type: signed.contentType, size: signed.size });
   }
   return uploads;
 }
@@ -134,7 +139,7 @@ FORM.addEventListener('submit', async event => {
 
 document.querySelector('#new-application').addEventListener('click', () => {
   FORM.reset(); FORM.hidden = false; document.querySelector('#success-panel').hidden = true;
-  document.querySelector('#upload-list').textContent = '';
+  UPLOAD_LIST.textContent = '';
   currentStep = 0; SEND.disabled = false; SEND.innerHTML = 'Submit application <span>→</span>'; updateStep();
 });
 

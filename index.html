@@ -107,7 +107,21 @@
                 <label><input type="checkbox" name="documents" value="2 months bank statements" /><span>2 months bank statements</span></label>
                 <label><input type="checkbox" name="documents" value="Work ID" /><span>Work ID (if available)</span></label>
               </div>
-              <label class="optional-upload field-wide"><span>Upload copies (optional)</span><input id="document-uploads" name="document_uploads" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" /><small>PDF, JPG or PNG · up to 8 files · 8 MB each. You can submit without uploading.</small></label>
+              <section class="optional-documents" aria-labelledby="optional-documents-title">
+                <h3 id="optional-documents-title">Upload copies (optional)</h3>
+                <p>Upload any documents you have now, or leave these blank and submit your application. PDF or JPG files are accepted; bank statements must be PDF.</p>
+                <div class="document-upload-grid">
+                  <label class="document-upload" data-document-type="Government ID"><span>Government ID</span><input name="document_uploads" type="file" multiple accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" /></label>
+                  <label class="document-upload" data-document-type="TRN"><span>TRN card / document</span><input name="document_uploads" type="file" multiple accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" /></label>
+                  <label class="document-upload" data-document-type="Recent photograph"><span>Recent photograph</span><input name="document_uploads" type="file" multiple accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" /></label>
+                  <label class="document-upload" data-document-type="Proof of address / JP letter"><span>Proof of address / JP letter</span><input name="document_uploads" type="file" multiple accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" /></label>
+                  <label class="document-upload" data-document-type="3 months payslips"><span>3 months payslips</span><input name="document_uploads" type="file" multiple accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" /></label>
+                  <label class="document-upload" data-document-type="2 months bank statements"><span>2 months bank statements · PDF only</span><input name="document_uploads" type="file" multiple accept=".pdf,application/pdf" /></label>
+                  <label class="document-upload" data-document-type="Work ID"><span>Work ID (if available)</span><input name="document_uploads" type="file" multiple accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" /></label>
+                </div>
+                <p id="upload-list" class="upload-list" aria-live="polite"></p>
+                <small class="upload-limit">PDF or JPG · up to 8 files total · 8 MB per file. Uploading is not required.</small>
+              </section>
               <p id="upload-list" class="upload-list field-wide" aria-live="polite"></p>
               <p class="document-note">Uploading is optional. Only upload documents you are comfortable sharing for this application. If you do not have proof of address, contact Kemlan about field verification and any applicable fee.</p>
               <label class="consent"><input type="checkbox" name="consent" required /><span>I confirm that the information above is accurate and agree to the <a href="https://kemlanfinancing.com/terms-conditions.php" target="_blank" rel="noreferrer">Terms and Conditions</a> and <a href="https://kemlanfinancing.com/privacy-policy.php" target="_blank" rel="noreferrer">Privacy Policy</a>. <b>*</b></span></label>

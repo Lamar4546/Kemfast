@@ -24,7 +24,7 @@ The browser's anon key is designed to be public. Row level security is what prot
 
 ## Form scope
 
-The application follows the supplied DOCX and omits ID number, directions/landmarks, the employment end/contract question, extension fields, HR/payroll contact fields, other-income source and amount, living expenses, and the original section 6. It asks whether applicants have additional income and loans not recorded on their payslip. Section 8 is titled “Checklist of documents to submit.” Applicants can optionally upload up to eight PDF, JPG, or PNG files (8 MB each); uploads are never required to submit. Files are stored in the private Supabase bucket and listed in the admin application details.
+The application follows the supplied DOCX and omits ID number, directions/landmarks, the employment end/contract question, extension fields, HR/payroll contact fields, other-income source and amount, living expenses, and the original section 6. It asks whether applicants have additional income and loans not recorded on their payslip. Section 8 is titled “Checklist of documents to submit.” Applicants can optionally upload up to eight PDF or JPG files (8 MB each); bank statements are PDF only. Uploads are never required to submit. Files are stored in the private Supabase bucket and listed by document type in the admin application details.
 
 ## Notes for deployment
 

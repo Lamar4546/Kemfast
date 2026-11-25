@@ -1,6 +1,6 @@
 const BUCKET = 'loan-documents';
 const MAX_BYTES = 8 * 1024 * 1024;
-const TYPES = new Set(['application/pdf', 'image/jpeg', 'image/png']);
+const DOCUMENT_TYPES = new Set(['Government ID', 'TRN', 'Recent photograph', 'Proof of address / JP letter', '3 months payslips', '2 months bank statements', 'Work ID']);
 const json = (res, status, body) => res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8').send(JSON.stringify(body));
 
 export default async function handler(req, res) {
@@ -12,13 +12,18 @@ export default async function handler(req, res) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!base || !serviceKey) return json(res, 503, { error: 'Document uploads are not configured yet.' });
 
-  const { applicationId, fileName, contentType, size } = req.body || {};
+  const { applicationId, fileName, contentType, size, documentType } = req.body || {};
   if (typeof applicationId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(applicationId)) return json(res, 400, { error: 'Invalid application reference.' });
-  if (typeof fileName !== 'string' || !fileName.trim() || fileName.length > 180 || !TYPES.has(contentType) || !Number.isInteger(size) || size < 1 || size > MAX_BYTES) {
-    return json(res, 400, { error: 'Use a PDF, JPG, or PNG file that is 8 MB or smaller.' });
+  if (typeof fileName !== 'string' || !fileName.trim() || fileName.length > 180 || !DOCUMENT_TYPES.has(documentType) || !Number.isInteger(size) || size < 1 || size > MAX_BYTES) {
+    return json(res, 400, { error: 'Choose a listed document type and a file that is 8 MB or smaller.' });
   }
 
-  const extension = ({ 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png' })[contentType];
+  const extension = fileName.split('.').pop().toLowerCase();
+  const isPdf = contentType === 'application/pdf' && extension === 'pdf';
+  const isJpg = contentType === 'image/jpeg' && ['jpg', 'jpeg'].includes(extension);
+  if (documentType === '2 months bank statements' ? !isPdf : !(isPdf || isJpg)) {
+    return json(res, 400, { error: documentType === '2 months bank statements' ? 'Bank statements must be PDF files.' : 'Documents must be PDF or JPG files.' });
+  }
   const path = `${applicationId}/${crypto.randomUUID()}.${extension}`;
   try {
     const response = await fetch(`${base}/storage/v1/object/upload/sign/${BUCKET}/${path}`, {
@@ -28,7 +33,7 @@ export default async function handler(req, res) {
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || !result.url || !result.token) return json(res, 502, { error: 'Could not prepare the secure upload. Please try again.' });
-    return json(res, 200, { path, token: result.token, uploadUrl: `${base}/storage/v1${result.url}`, name: fileName.trim(), contentType, size });
+    return json(res, 200, { path, token: result.token, uploadUrl: `${base}/storage/v1${result.url}`, name: fileName.trim(), contentType, documentType, size });
   } catch {
     return json(res, 502, { error: 'Could not contact secure document storage.' });
   }
