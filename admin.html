@@ -62,12 +62,29 @@
           <div class="dashboard-content">
             <div class="stats">
               <div class="stat-card"><span>ALL APPLICATIONS</span><strong id="total-count">—</strong><i class="stat-icon">▤</i></div>
-              <div class="stat-card"><span>NEW ENQUIRIES</span><strong id="new-count">—</strong><i class="stat-icon stat-icon-gold">◷</i></div>
               <div class="stat-card"><span>PENDING REVIEW</span><strong id="pending-count">—</strong><i class="stat-icon stat-icon-teal">◷</i></div>
               <div class="stat-card"><span>APPROVED</span><strong id="approved-count">—</strong><i class="stat-icon stat-icon-green">✓</i></div>
-              <div class="stat-card"><span>REJECTED</span><strong id="rejected-count">—</strong><i class="stat-icon stat-icon-red">×</i></div>
+              <div class="stat-card"><span>TOTAL AMOUNT REQUESTED</span><strong id="requested-total">—</strong><i class="stat-icon stat-icon-teal">$</i></div>
             </div>
-            <div class="overview-grid">
+            <div class="applications-layout">
+              <div class="applications-column">
+                <div class="table-card">
+                  <div class="applications-heading"><div><div class="eyebrow dark-eyebrow">APPLICATIONS</div><h2>Recent applications</h2><p>Review a submission, update its status, or print it to PDF.</p></div><button id="refresh" class="refresh-button" type="button">↻ &nbsp; Refresh</button></div>
+                  <div class="application-filters" aria-label="Filter applications">
+                    <label class="search-field"><span>Search</span><input id="application-search" type="search" placeholder="Name, email, phone…" /></label>
+                    <label class="filter-field"><span>Status</span><select id="status-filter"><option value="all">All statuses</option><option value="new">New</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
+                    <label class="filter-field"><span>Source</span><select id="source-filter"><option value="all">All sources</option><option value="qr">QR code</option><option value="website">Website / direct</option><option value="unknown">Not recorded</option></select></label>
+                    <label class="date-filter"><span>From date</span><input id="from-date" type="date" /></label>
+                    <label class="date-filter"><span>To date</span><input id="to-date" type="date" /></label>
+                    <button id="filter-applications" class="button button-primary filter-button" type="button">⌕ Filter</button>
+                    <button id="clear-filters" class="button button-outline clear-button" type="button">× Clear</button>
+                  </div>
+                  <div class="table-scroll"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Contact</th><th>Loan details</th><th>Source</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="applications-body"></tbody></table></div>
+                  <div id="empty-state" hidden>No applications yet. New submissions will appear here.</div>
+                  <div class="table-pagination"><span id="pagination-summary" aria-live="polite"></span><div><button id="previous-page" class="page-button" type="button" aria-label="Previous page">‹</button><span id="pagination-pages"></span><button id="next-page" class="page-button" type="button" aria-label="Next page">›</button></div></div>
+                </div>
+              </div>
+              <aside class="dashboard-rail">
               <section class="overview-card" aria-labelledby="status-overview-title">
                 <h2 id="status-overview-title">Status breakdown</h2>
                 <div class="overview-status"><div><span>New</span><strong id="breakdown-new-count">—</strong></div><div class="overview-track"><span id="breakdown-new-bar"></span></div></div>
@@ -76,10 +93,16 @@
                 <div class="overview-status"><div><span>Rejected</span><strong id="breakdown-rejected-count">—</strong></div><div class="overview-track"><span id="breakdown-rejected-bar"></span></div></div>
               </section>
               <section class="overview-card qr-overview" aria-labelledby="qr-overview-title">
-                <div><div class="eyebrow dark-eyebrow">SOURCE TRACKING</div><h2 id="qr-overview-title">QR code applications</h2><p>Applications opened from the QR code on your printed materials.</p></div>
+                <div><div class="eyebrow dark-eyebrow">SOURCE TRACKING</div><h2 id="qr-overview-title">QR applications</h2><p>Applicants who opened the form from your QR code.</p></div>
                 <strong id="qr-overview-count">—</strong>
                 <button id="view-qr-applications" class="button button-outline" type="button">View QR applications →</button>
               </section>
+              <section class="overview-card quick-actions" aria-labelledby="quick-actions-title">
+                <h2 id="quick-actions-title">Quick actions</h2>
+                <button id="review-pending" class="quick-action-button" type="button"><span>◷</span> Review pending applications <b>→</b></button>
+                <button id="show-new" class="quick-action-button quick-action-muted" type="button"><span>▤</span> View new enquiries <b>→</b></button>
+              </section>
+              </aside>
             </div>
             <div class="dashboard-tools"><div><h2>Team access</h2><p>Invite authorized staff to review applications.</p></div><button id="toggle-invite" class="button button-outline" type="button" aria-expanded="false">＋ Add staff member</button></div>
             <section class="invite-card" id="invite-card" hidden aria-labelledby="invite-title">
@@ -87,21 +110,6 @@
               <form id="invite-form" class="invite-form"><label class="field"><span>Staff email address</span><input name="email" type="email" required autocomplete="email" placeholder="colleague@kemlanfinancing.com" /></label><button class="button button-primary" type="submit">Send invitation</button></form>
               <p id="invite-status" class="invite-status" role="status" aria-live="polite"></p>
             </section>
-            <div class="table-card">
-              <div class="applications-heading"><div><div class="eyebrow dark-eyebrow">APPLICATIONS</div><h2>Recent applications</h2><p>Review a submission, update its status, or print it to PDF.</p></div><button id="refresh" class="refresh-button" type="button">↻ &nbsp; Refresh</button></div>
-              <div class="application-filters" aria-label="Filter applications">
-                <label class="search-field"><span>Search</span><input id="application-search" type="search" placeholder="Name, email, phone…" /></label>
-                <label class="filter-field"><span>Status</span><select id="status-filter"><option value="all">All statuses</option><option value="new">New</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
-                <label class="filter-field"><span>Source</span><select id="source-filter"><option value="all">All sources</option><option value="qr">QR code</option><option value="website">Website / direct</option><option value="unknown">Not recorded</option></select></label>
-                <label class="date-filter"><span>From date</span><input id="from-date" type="date" /></label>
-                <label class="date-filter"><span>To date</span><input id="to-date" type="date" /></label>
-                <button id="filter-applications" class="button button-primary filter-button" type="button">⌕ Filter</button>
-                <button id="clear-filters" class="button button-outline clear-button" type="button">× Clear</button>
-              </div>
-              <div class="table-scroll"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Contact</th><th>Loan details</th><th>Source</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="applications-body"></tbody></table></div>
-              <div id="empty-state" hidden>No applications yet. New submissions will appear here.</div>
-              <div class="table-pagination"><span id="pagination-summary" aria-live="polite"></span><div><button id="previous-page" class="page-button" type="button" aria-label="Previous page">‹</button><span id="pagination-pages"></span><button id="next-page" class="page-button" type="button" aria-label="Next page">›</button></div></div>
-            </div>
             <p class="admin-note">Application records contain personal financial information. Keep access limited to authorized staff.</p>
           </div>
         </div>

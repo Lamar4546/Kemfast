@@ -41,10 +41,10 @@ async function loadApplications() {
   if (!response.ok) throw new Error(response.status === 403 ? 'Your account does not have permission to view applications.' : 'Could not load applications. Please try again.');
   const applications = await response.json();
   document.querySelector('#total-count').textContent = applications.length;
-  document.querySelector('#new-count').textContent = applications.filter(row => !row.status || row.status === 'new').length;
   document.querySelector('#pending-count').textContent = applications.filter(row => row.status === 'pending_approval').length;
   document.querySelector('#approved-count').textContent = applications.filter(row => row.status === 'approved').length;
-  document.querySelector('#rejected-count').textContent = applications.filter(row => row.status === 'rejected').length;
+  const totalRequested = applications.reduce((sum, row) => sum + (Number(row.loan_amount) || 0), 0);
+  document.querySelector('#requested-total').textContent = new Intl.NumberFormat('en-JM', { style: 'currency', currency: 'JMD', maximumFractionDigits: 0 }).format(totalRequested);
   const totals = {
     new: applications.filter(row => !row.status || row.status === 'new').length,
     pending: applications.filter(row => row.status === 'pending_approval').length,
@@ -405,6 +405,15 @@ document.querySelector('#view-qr-applications').addEventListener('click', () => 
   setActiveNavigation('qr');
   document.querySelector('.application-filters').scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
+function applyQuickFilter(status) {
+  document.querySelector('#status-filter').value = status;
+  document.querySelector('#source-filter').value = 'all';
+  document.querySelectorAll('.sidebar-nav [data-dashboard-filter]').forEach(button => button.classList.toggle('active', button.dataset.dashboardFilter === status));
+  filterApplications();
+  document.querySelector('.applications-column').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+document.querySelector('#review-pending').addEventListener('click', () => applyQuickFilter('pending_approval'));
+document.querySelector('#show-new').addEventListener('click', () => applyQuickFilter('new'));
 function setActiveNavigation(active) {
   document.querySelectorAll('.sidebar-nav [data-dashboard-filter]').forEach(button => {
     button.classList.toggle('active', button.dataset.dashboardFilter === active && (active !== 'all' || button.textContent.includes('All applications')));
