@@ -47,6 +47,7 @@
             <button type="button" data-dashboard-filter="new">◷ <span>New enquiries</span></button>
             <button type="button" data-dashboard-filter="pending_approval">◷ <span>Pending approval</span></button>
             <button type="button" data-dashboard-filter="approved">✓ <span>Approved</span></button>
+            <button type="button" data-dashboard-filter="rejected">× <span>Rejected</span></button>
             <button type="button" data-dashboard-filter="qr">▦ <span>QR applications</span></button>
             <span class="nav-caption">SETTINGS</span>
             <button id="sidebar-staff" type="button">♙ <span>Staff users</span></button>
@@ -64,6 +65,7 @@
               <div class="stat-card"><span>NEW ENQUIRIES</span><strong id="new-count">—</strong><i class="stat-icon stat-icon-gold">◷</i></div>
               <div class="stat-card"><span>PENDING REVIEW</span><strong id="pending-count">—</strong><i class="stat-icon stat-icon-teal">◷</i></div>
               <div class="stat-card"><span>APPROVED</span><strong id="approved-count">—</strong><i class="stat-icon stat-icon-green">✓</i></div>
+              <div class="stat-card"><span>REJECTED</span><strong id="rejected-count">—</strong><i class="stat-icon stat-icon-red">×</i></div>
             </div>
             <div class="overview-grid">
               <section class="overview-card" aria-labelledby="status-overview-title">
@@ -71,6 +73,7 @@
                 <div class="overview-status"><div><span>New</span><strong id="breakdown-new-count">—</strong></div><div class="overview-track"><span id="breakdown-new-bar"></span></div></div>
                 <div class="overview-status"><div><span>Pending approval</span><strong id="breakdown-pending-count">—</strong></div><div class="overview-track"><span id="breakdown-pending-bar"></span></div></div>
                 <div class="overview-status"><div><span>Approved</span><strong id="breakdown-approved-count">—</strong></div><div class="overview-track"><span id="breakdown-approved-bar"></span></div></div>
+                <div class="overview-status"><div><span>Rejected</span><strong id="breakdown-rejected-count">—</strong></div><div class="overview-track"><span id="breakdown-rejected-bar"></span></div></div>
               </section>
               <section class="overview-card qr-overview" aria-labelledby="qr-overview-title">
                 <div><div class="eyebrow dark-eyebrow">SOURCE TRACKING</div><h2 id="qr-overview-title">QR code applications</h2><p>Applications opened from the QR code on your printed materials.</p></div>
@@ -88,7 +91,7 @@
               <div class="applications-heading"><div><div class="eyebrow dark-eyebrow">APPLICATIONS</div><h2>Recent applications</h2><p>Review a submission, update its status, or print it to PDF.</p></div><button id="refresh" class="refresh-button" type="button">↻ &nbsp; Refresh</button></div>
               <div class="application-filters" aria-label="Filter applications">
                 <label class="search-field"><span>Search</span><input id="application-search" type="search" placeholder="Name, email, phone…" /></label>
-                <label class="filter-field"><span>Status</span><select id="status-filter"><option value="all">All statuses</option><option value="new">New</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option></select></label>
+                <label class="filter-field"><span>Status</span><select id="status-filter"><option value="all">All statuses</option><option value="new">New</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
                 <label class="filter-field"><span>Source</span><select id="source-filter"><option value="all">All sources</option><option value="qr">QR code</option><option value="website">Website / direct</option><option value="unknown">Not recorded</option></select></label>
                 <label class="date-filter"><span>From date</span><input id="from-date" type="date" /></label>
                 <label class="date-filter"><span>To date</span><input id="to-date" type="date" /></label>
@@ -97,12 +100,13 @@
               </div>
               <div class="table-scroll"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Contact</th><th>Loan details</th><th>Source</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="applications-body"></tbody></table></div>
               <div id="empty-state" hidden>No applications yet. New submissions will appear here.</div>
+              <div class="table-pagination"><span id="pagination-summary" aria-live="polite"></span><div><button id="previous-page" class="page-button" type="button" aria-label="Previous page">‹</button><span id="pagination-pages"></span><button id="next-page" class="page-button" type="button" aria-label="Next page">›</button></div></div>
             </div>
             <p class="admin-note">Application records contain personal financial information. Keep access limited to authorized staff.</p>
           </div>
         </div>
       </section>
-      <dialog id="details-modal"><div class="modal-head"><div><div class="eyebrow dark-eyebrow">APPLICATION DETAILS</div><h2 id="modal-name"></h2></div><div class="modal-head-actions"><button id="print-application" class="button button-primary" type="button">Print / Save as PDF</button><button id="close-modal" class="close-modal" type="button" aria-label="Close">×</button></div></div><div id="modal-fields" class="modal-fields"></div></dialog>
+      <dialog id="details-modal"><div class="modal-head"><div><div class="eyebrow dark-eyebrow">APPLICATION DETAILS</div><h2 id="modal-name"></h2><p id="modal-submitted" class="modal-submitted"></p></div><div class="modal-head-actions"><span id="modal-status-badge" class="status-badge"></span><button id="print-application" class="button button-primary" type="button">Export / Print PDF</button><button id="close-modal" class="close-modal" type="button" aria-label="Close">×</button></div></div><div class="detail-layout"><div id="modal-fields" class="modal-fields"></div><aside class="detail-actions"><section class="detail-action-card"><h3>Update status</h3><label for="detail-status">New status</label><select id="detail-status"><option value="new">New enquiry</option><option value="pending_approval">Pending approval</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button id="save-detail-status" class="button button-primary" type="button">Save status</button></section><section class="detail-action-card"><h3>Applicant contact</h3><div class="contact-actions"><a id="contact-email" href="#">Email applicant</a><a id="contact-call" href="#">Call applicant</a><a id="contact-whatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a></div></section><button id="delete-detail-application" class="delete-detail-button" type="button">Delete application</button></aside></div></dialog>
     </main>
     <section id="print-sheet" aria-hidden="true"></section>
     <footer><a class="brand footer-brand" href="/"><img src="/kemlan-logo.png" alt="Kemlan Financing" /></a><span>Authorized staff only</span><span>© 2026 Kemlan Financing Limited</span></footer>

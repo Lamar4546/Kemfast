@@ -161,5 +161,45 @@ body.admin-signed-in>.admin-main{width:100%;max-width:none;margin:0;padding:0}
 @media(max-width:820px){#dashboard.admin-workspace{display:flex;flex-direction:column}.admin-sidebar{position:static;height:auto;padding:12px 0 0}.sidebar-brand{min-height:42px;padding:0 17px 9px}.sidebar-brand img{width:132px;max-height:35px}.sidebar-heading{display:none}.sidebar-foot{display:none}.sidebar-nav{display:flex;gap:5px;overflow-x:auto;padding:8px 12px 12px;scrollbar-width:thin}.sidebar-nav .nav-caption{display:none}.sidebar-nav button{flex:0 0 auto;width:auto;min-height:38px;padding:0 12px;border:0;border-radius:8px;font-size:12px}.sidebar-nav button.active{background:#075d83}.dashboard-topbar{position:static;min-height:82px;padding:13px 18px}.dashboard-topbar h1{font-size:25px}.topbar-actions{gap:8px}.staff-chip{padding-right:9px}.staff-chip>span{width:34px;height:34px}.staff-chip strong{font-size:11px}.staff-chip small{font-size:10px}.dashboard-content{padding:18px}.overview-grid{grid-template-columns:1fr 1fr}.application-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.application-filters .search-field{grid-column:1/-1}.applications-heading{padding:18px}}
 @media(max-width:580px){.dashboard-topbar{align-items:flex-start;flex-direction:column;gap:11px}.topbar-actions{width:100%;justify-content:space-between}.view-site-button{min-height:37px;padding:0 11px}.staff-chip{margin-left:auto}.dashboard-topbar #signout{min-height:37px}.dashboard-content{padding:15px 12px 30px}.stats{gap:10px}.stat-card{min-height:102px;padding:15px 14px}.stat-card strong{font-size:30px}.stat-card span{max-width:calc(100% - 37px);font-size:9px;line-height:1.35}.stat-icon{top:14px;right:12px;width:32px;height:32px;border-radius:10px;font-size:16px}.overview-grid{grid-template-columns:1fr;gap:10px}.overview-card{padding:17px}.qr-overview>strong{font-size:32px}.dashboard-tools{align-items:flex-start;gap:12px}.dashboard-tools h2{font-size:16px}.dashboard-tools p{max-width:210px;font-size:12px}.dashboard-tools>.button{min-height:38px;padding:0 10px;font-size:12px;white-space:nowrap}.applications-heading{align-items:flex-start;padding:17px 14px 14px}.applications-heading h2{font-size:19px}.applications-heading p{max-width:250px;line-height:1.4}.applications-heading .refresh-button{min-height:36px;padding:0 10px;font-size:12px}.application-filters{padding:13px;gap:9px}.application-filters label{font-size:11px}.application-filters input,.application-filters select{height:40px;font-size:13px}.filter-button,.clear-button{min-height:39px;font-size:12px}.table-card table{min-width:1200px}.modal-head-actions .button-primary{max-width:190px;white-space:normal;line-height:1.2;text-align:center}body.admin-signed-in>.admin-main{padding:0}}
 
+/* Application review tools based on the supplied dashboard reference. */
+.stat-icon-red{background:#fdecee;color:#c23e4b}
+.status-rejected{background:#fde5e7;color:#a62a38}
+#breakdown-rejected-bar{background:#d94b58}
+.table-pagination{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 20px;border-top:1px solid #e9edf0;color:#62727d;font-size:13px}
+.table-pagination>div{display:flex;align-items:center;gap:5px}
+.table-pagination #pagination-pages{display:flex;gap:5px}
+.page-button{display:grid;place-items:center;min-width:34px;height:34px;padding:0 9px;border:1px solid #dce3e8;border-radius:8px;background:#fff;color:#344956;font:600 13px inherit;cursor:pointer}
+.page-button:hover:not(:disabled){border-color:#075b7e;color:#075b7e}
+.page-button.active{border-color:#075b7e;background:#075b7e;color:#fff}
+.page-button:disabled{opacity:.45;cursor:not-allowed}
+#details-modal{width:min(1120px,calc(100vw - 36px));max-width:none;max-height:min(90vh,920px);padding:0;border:1px solid #e1e7eb;border-radius:16px;background:#f6f8f9;color:#223541;box-shadow:0 24px 80px #0b223344}
+#details-modal::backdrop{background:#101b25a6;backdrop-filter:blur(3px)}
+#details-modal .modal-head{position:sticky;z-index:2;top:0;align-items:center;padding:22px 25px;background:#fff;border-bottom:1px solid #e5eaed}
+#modal-name{margin:5px 0 3px;font-size:25px}
+.modal-submitted{margin:0;color:#687b85;font-size:13px}
+.detail-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:18px;padding:18px}
+#details-modal #modal-fields{display:block;min-width:0;padding:0;background:transparent}
+.detail-section{margin:0 0 14px;padding:17px 19px;background:#fff;border:1px solid #e4eaed;border-radius:12px;box-shadow:0 2px 5px #102b3708}
+.detail-section>h3{margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #e8edef;color:#075b7e;font-size:16px}
+.detail-section .modal-fields{gap:0 18px}
+.detail-section .modal-field{padding:9px 0;border-bottom:1px solid #f0f2f3}
+.detail-section .modal-field span{font-size:11px;letter-spacing:.03em}
+.detail-section .modal-field strong{font-size:13px;overflow-wrap:anywhere}
+.detail-actions{position:sticky;top:90px;align-self:start;display:grid;gap:12px}
+.detail-action-card{padding:17px;background:#fff;border:1px solid #e4eaed;border-radius:12px;box-shadow:0 2px 5px #102b3708}
+.detail-action-card h3{margin:0 0 15px;font-size:16px}
+.detail-action-card>label{display:block;margin-bottom:6px;color:#637781;font-size:12px;font-weight:700}
+.detail-action-card select{width:100%;height:42px;margin-bottom:12px;padding:0 10px;border:1px solid #d7e0e4;border-radius:8px;background:#fff;color:#233d4b;font:inherit}
+.detail-action-card .button{width:100%;min-height:40px;justify-content:center;font-size:13px}
+.contact-actions{display:grid;gap:8px}
+.contact-actions a{display:flex;align-items:center;min-height:38px;padding:0 11px;border-radius:8px;background:#eef1f4;color:#304753;text-decoration:none;font-size:13px;font-weight:700}
+.contact-actions a:hover{background:#e1edf1;color:#075b7e}
+.delete-detail-button{min-height:40px;border:1px solid #f0d5d2;border-radius:8px;background:#fff;color:#a33c35;font:700 13px inherit;cursor:pointer}
+.delete-detail-button:hover{background:#fff2f1}
+.details-source{display:block!important;margin:0 0 14px;padding:12px 14px;border-radius:10px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.detail-layout{grid-template-columns:minmax(0,1fr) 230px;gap:12px;padding:12px}}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.detail-layout{grid-template-columns:1fr}.detail-actions{position:static;grid-template-columns:1fr 1fr}.detail-actions>.delete-detail-button{grid-column:1/-1}#details-modal .modal-head{align-items:flex-start;flex-wrap:wrap;padding:17px}.modal-head-actions{width:100%;justify-content:flex-start}.table-pagination{padding:12px}.table-pagination #pagination-pages .page-button:nth-child(n+5){display:none}}
+@media(max-width:460px){.detail-actions{grid-template-columns:1fr}.detail-actions>.delete-detail-button{grid-column:auto}.table-pagination{align-items:flex-start;flex-direction:column}.table-pagination>div{align-self:flex-end}.table-pagination #pagination-pages .page-button:nth-child(n+4){display:none}}
+
 /* Give the QR landing page's form and product sections enough scale on desktop. */
 @media(min-width:1000px){body:has(.hero) .hero{min-height:410px}.hero h1{font-size:58px}.hero-content>p{font-size:16px}.hero .eyebrow{font-size:12px}.hero-points{font-size:13px}.content-grid{max-width:1280px;grid-template-columns:280px minmax(0,1fr);gap:56px;padding-top:58px;padding-bottom:78px}.side-panel h2{font-size:28px}.side-panel>p{font-size:15px;max-width:260px}.side-step{font-size:12px}.form-card{padding:38px 44px 30px}.form-heading h2{font-size:28px}.form-heading p{font-size:13px}.form-kicker{font-size:11px}.section-heading strong{font-size:15px}.section-heading small{font-size:12px}.field,.field>span,.field legend{font-size:14px}.field input,.field select,.field textarea{font-size:14px;min-height:46px}.field textarea{min-height:92px}.choice-field label,.document-grid label{font-size:13px}.products-section{max-width:1280px;padding-bottom:68px}.products-heading h2{font-size:30px}.product-card{min-height:230px;padding:22px}.product-tag{font-size:10px}.product-card h3{font-size:19px}.product-card p{font-size:14px;min-height:58px}.product-term{font-size:12px}.process-strip div{font-size:13px}.bottom-cta{padding-top:38px;padding-bottom:38px}.bottom-kicker{font-size:11px}.bottom-cta h2{font-size:27px}.bottom-cta p{font-size:14px}}

@@ -11,8 +11,15 @@ const inviteForm = document.querySelector('#invite-form');
 const inviteStatus = document.querySelector('#invite-status');
 const inviteToggle = document.querySelector('#toggle-invite');
 let accessToken = null;
+let selectedApplication = null;
+let currentPage = 1;
+const PAGE_SIZE = 20;
 
-function showError(message) { errorBox.textContent = message; errorBox.hidden = false; }
+function showError(message) {
+  if (!errorBox) { console.error(message); return; }
+  errorBox.textContent = message;
+  errorBox.hidden = false;
+}
 function setSignedIn(signedIn) {
   loginPanel.hidden = signedIn;
   dashboard.hidden = !signedIn;
@@ -37,10 +44,12 @@ async function loadApplications() {
   document.querySelector('#new-count').textContent = applications.filter(row => !row.status || row.status === 'new').length;
   document.querySelector('#pending-count').textContent = applications.filter(row => row.status === 'pending_approval').length;
   document.querySelector('#approved-count').textContent = applications.filter(row => row.status === 'approved').length;
+  document.querySelector('#rejected-count').textContent = applications.filter(row => row.status === 'rejected').length;
   const totals = {
     new: applications.filter(row => !row.status || row.status === 'new').length,
     pending: applications.filter(row => row.status === 'pending_approval').length,
-    approved: applications.filter(row => row.status === 'approved').length
+    approved: applications.filter(row => row.status === 'approved').length,
+    rejected: applications.filter(row => row.status === 'rejected').length
   };
   for (const [key, count] of Object.entries(totals)) {
     document.querySelector(`#breakdown-${key}-count`).textContent = count;
@@ -58,7 +67,7 @@ async function loadApplications() {
     tr.dataset.source = source;
     tr.dataset.submitted = localDateKey(row.created_at);
     const reference = String(row.id || '').slice(0, 8).toUpperCase();
-    tr.innerHTML = `<td><strong class="application-reference">${safe(reference)}</strong></td><td><strong>${safe([row.first_name, row.middle_name, row.last_name].filter(Boolean).join(' '))}</strong><small>${safe(row.parish)} · ${safe(row.town)}</small></td><td><strong>${safe(row.phone)}</strong><small>${safe(row.email)}</small></td><td><strong>JMD $${Number(row.loan_amount).toLocaleString('en-JM')}</strong><small>${safe(row.loan_purpose)} · ${safe(row.loan_term)}</small></td><td><span class="source-badge source-${source}">${source === 'qr' ? 'QR code' : source === 'website' ? 'Website' : 'Not recorded'}</span></td><td>${safe(dateTimeLabel(row.created_at))}</td><td><span class="status-badge status-${safe(status)}">${safe(statusLabel(status))}</span></td><td class="row-actions"><select class="status-select" aria-label="Update status for ${safe(row.first_name)} ${safe(row.last_name)}"><option value="new" ${status === 'new' ? 'selected' : ''}>New</option><option value="pending_approval" ${status === 'pending_approval' ? 'selected' : ''}>Pending approval</option><option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option></select><button type="button" class="delete-application" aria-label="Delete application for ${safe(row.first_name)} ${safe(row.last_name)}">Delete</button></td>`;
+    tr.innerHTML = `<td><strong class="application-reference">${safe(reference)}</strong></td><td><strong>${safe([row.first_name, row.middle_name, row.last_name].filter(Boolean).join(' '))}</strong><small>${safe(row.parish)} · ${safe(row.town)}</small></td><td><strong>${safe(row.phone)}</strong><small>${safe(row.email)}</small></td><td><strong>JMD $${Number(row.loan_amount).toLocaleString('en-JM')}</strong><small>${safe(row.loan_purpose)} · ${safe(row.loan_term)}</small></td><td><span class="source-badge source-${source}">${source === 'qr' ? 'QR code' : source === 'website' ? 'Website' : 'Not recorded'}</span></td><td>${safe(dateTimeLabel(row.created_at))}</td><td><span class="status-badge status-${safe(status)}">${safe(statusLabel(status))}</span></td><td class="row-actions"><select class="status-select" aria-label="Update status for ${safe(row.first_name)} ${safe(row.last_name)}"><option value="new" ${status === 'new' ? 'selected' : ''}>New</option><option value="pending_approval" ${status === 'pending_approval' ? 'selected' : ''}>Pending approval</option><option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Rejected</option></select><button type="button" class="delete-application" aria-label="Delete application for ${safe(row.first_name)} ${safe(row.last_name)}">Delete</button></td>`;
     tr.tabIndex = 0;
     tr.setAttribute('aria-label', `View ${row.first_name} ${row.last_name} application details`);
     tr.addEventListener('click', event => { if (!event.target.closest('.row-actions')) showDetails(row); });
@@ -79,19 +88,39 @@ function filterApplications() {
   const source = document.querySelector('#source-filter').value;
   const fromDate = document.querySelector('#from-date').value;
   const toDate = document.querySelector('#to-date').value;
-  let visible = 0;
-  for (const row of document.querySelectorAll('#applications-body tr')) {
+  const rows = [...document.querySelectorAll('#applications-body tr')];
+  const matching = [];
+  for (const row of rows) {
     const matchesQuery = !query || row.textContent.toLowerCase().includes(query);
     const matchesStatus = status === 'all' || row.dataset.status === status;
     const matchesSource = source === 'all' || row.dataset.source === source;
     const matchesDate = (!fromDate || row.dataset.submitted >= fromDate) && (!toDate || row.dataset.submitted <= toDate);
     row.hidden = !(matchesQuery && matchesStatus && matchesSource && matchesDate);
-    if (!row.hidden) visible++;
+    if (!row.hidden) matching.push(row);
   }
+  const pageCount = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
+  currentPage = Math.min(currentPage, pageCount);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  matching.forEach((row, index) => { row.hidden = index < start || index >= start + PAGE_SIZE; });
+  const visible = matching.length;
   const empty = document.querySelector('#empty-state');
   empty.hidden = visible > 0;
-  if (document.querySelectorAll('#applications-body tr').length && visible === 0) empty.textContent = 'No applications match these filters.';
+  if (rows.length && visible === 0) empty.textContent = 'No applications match these filters.';
   else empty.textContent = 'No applications yet. New submissions will appear here.';
+  const first = visible ? start + 1 : 0;
+  const last = Math.min(start + PAGE_SIZE, visible);
+  document.querySelector('#pagination-summary').textContent = `Showing ${first}–${last} of ${visible} applications`;
+  const pages = document.querySelector('#pagination-pages');
+  pages.replaceChildren();
+  for (let page = 1; page <= pageCount; page++) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = `page-button${page === currentPage ? ' active' : ''}`;
+    button.textContent = page; button.setAttribute('aria-label', `Page ${page}`); button.setAttribute('aria-current', page === currentPage ? 'page' : 'false');
+    button.addEventListener('click', () => { currentPage = page; filterApplications(); });
+    pages.append(button);
+  }
+  document.querySelector('#previous-page').disabled = currentPage === 1;
+  document.querySelector('#next-page').disabled = currentPage === pageCount;
 }
 
 function localDateKey(date) {
@@ -100,7 +129,7 @@ function localDateKey(date) {
 }
 
 function statusLabel(status) {
-  return ({ new: 'New', pending_approval: 'Pending approval', approved: 'Approved' })[status] || 'New';
+  return ({ new: 'New enquiry', pending_approval: 'Pending approval', approved: 'Approved', rejected: 'Rejected' })[status] || 'New enquiry';
 }
 
 async function updateApplicationStatus(row, status, control) {
@@ -123,7 +152,7 @@ async function updateApplicationStatus(row, status, control) {
 }
 
 async function deleteApplication(row, button) {
-  if (!window.confirm(`Permanently delete the application for ${row.first_name} ${row.last_name}? This cannot be undone.`)) return;
+  if (!window.confirm(`Permanently delete the application for ${row.first_name} ${row.last_name}? This cannot be undone.`)) return false;
   button.disabled = true;
   try {
     const response = await fetch(`${URL}/rest/v1/loan_applications?id=eq.${encodeURIComponent(row.id)}`, {
@@ -132,9 +161,11 @@ async function deleteApplication(row, button) {
     });
     if (!response.ok) throw new Error('Could not delete this application. Apply the dashboard permissions in Supabase, then try again.');
     await loadApplications();
+    return true;
   } catch (error) {
     showError(error.message);
     button.disabled = false;
+    return false;
   }
 }
 
@@ -159,7 +190,16 @@ function fieldValue(row, key) {
 }
 
 function showDetails(row) {
+  selectedApplication = row;
   document.querySelector('#modal-name').textContent = `${row.first_name} ${row.last_name}`;
+  document.querySelector('#modal-submitted').textContent = `Submitted ${dateTimeLabel(row.created_at)} · ${String(row.id || '').slice(0, 8).toUpperCase()}`;
+  const status = row.status || 'new';
+  const badge = document.querySelector('#modal-status-badge');
+  badge.textContent = statusLabel(status); badge.className = `status-badge status-${status}`;
+  document.querySelector('#detail-status').value = status;
+  document.querySelector('#contact-email').href = `mailto:${row.email || ''}`;
+  document.querySelector('#contact-call').href = `tel:${row.phone || ''}`;
+  document.querySelector('#contact-whatsapp').href = `https://wa.me/${String(row.phone || '').replace(/\D/g, '')}`;
   const fields = document.querySelector('#modal-fields');
   fields.replaceChildren();
   for (const [heading, keys] of DETAIL_GROUPS) {
@@ -220,7 +260,7 @@ function showDetails(row) {
       fields.append(wrap);
     }
   }
-  detailsModal.showModal();
+  if (!detailsModal.open) detailsModal.showModal();
   document.querySelector('#print-application').onclick = () => printApplication(row);
 }
 
@@ -263,6 +303,29 @@ function printApplication(row) {
   document.body.classList.add('print-mode');
   window.setTimeout(() => window.print(), 80);
 }
+
+document.querySelector('#save-detail-status').addEventListener('click', async event => {
+  if (!selectedApplication) return;
+  const button = event.currentTarget;
+  const value = document.querySelector('#detail-status').value;
+  button.disabled = true;
+  try {
+    const response = await fetch(`${URL}/rest/v1/loan_applications?id=eq.${encodeURIComponent(selectedApplication.id)}`, {
+      method: 'PATCH', headers: { apikey: KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ status: value })
+    });
+    if (!response.ok) throw new Error('Could not update this application. Run the latest Supabase schema from supabase/schema.sql and try again.');
+    selectedApplication.status = value;
+    await loadApplications();
+    showDetails(selectedApplication);
+  } catch (error) { showError(error.message); }
+  finally { button.disabled = false; }
+});
+
+document.querySelector('#delete-detail-application').addEventListener('click', async event => {
+  if (!selectedApplication) return;
+  const button = event.currentTarget;
+  if (await deleteApplication(selectedApplication, button)) detailsModal.close();
+});
 
 window.addEventListener('afterprint', () => document.body.classList.remove('print-mode'));
 
@@ -333,6 +396,7 @@ document.querySelector('#clear-filters').addEventListener('click', () => {
   document.querySelector('#source-filter').value = 'all';
   document.querySelector('#from-date').value = '';
   document.querySelector('#to-date').value = '';
+  currentPage = 1;
   filterApplications();
 });
 document.querySelector('#view-qr-applications').addEventListener('click', () => {
@@ -348,12 +412,15 @@ function setActiveNavigation(active) {
 }
 document.querySelectorAll('.sidebar-nav [data-dashboard-filter]').forEach(button => button.addEventListener('click', () => {
   const value = button.dataset.dashboardFilter;
-  document.querySelector('#status-filter').value = ['new', 'pending_approval', 'approved'].includes(value) ? value : 'all';
+  document.querySelector('#status-filter').value = ['new', 'pending_approval', 'approved', 'rejected'].includes(value) ? value : 'all';
   document.querySelector('#source-filter').value = value === 'qr' ? 'qr' : 'all';
+  currentPage = 1;
   filterApplications();
   document.querySelectorAll('.sidebar-nav [data-dashboard-filter]').forEach(item => item.classList.toggle('active', item === button));
   if (value !== 'all' || button.textContent.includes('All applications')) document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }));
+document.querySelector('#previous-page').addEventListener('click', () => { currentPage = Math.max(1, currentPage - 1); filterApplications(); });
+document.querySelector('#next-page').addEventListener('click', () => { currentPage += 1; filterApplications(); });
 document.querySelector('#sidebar-staff').addEventListener('click', () => {
   if (inviteCard.hidden) inviteToggle.click();
   inviteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });

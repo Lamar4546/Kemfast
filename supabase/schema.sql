@@ -130,13 +130,10 @@ begin
   end if;
 end $$;
 
-do $$
-begin
-  if not exists (select 1 from pg_constraint where conname = 'loan_applications_status_check') then
-    alter table public.loan_applications add constraint loan_applications_status_check
-      check (status in ('new','pending_approval','approved'));
-  end if;
-end $$;
+-- Keep the allowed review states in sync with the admin dashboard.
+alter table public.loan_applications drop constraint if exists loan_applications_status_check;
+alter table public.loan_applications add constraint loan_applications_status_check
+  check (status in ('new','pending_approval','approved','rejected'));
 
 create table if not exists public.admin_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
