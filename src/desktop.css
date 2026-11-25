@@ -49,6 +49,7 @@
 .offer-close{position:absolute;top:12px;right:12px;width:42px;height:42px;border:0;border-radius:50%;background:#f0f7f7;color:#345765;font-size:27px;cursor:pointer}
 .offer-mark{width:50px;height:50px;margin:0 auto 13px;display:grid;place-items:center;border-radius:16px;background:#e5f4f1;color:#087e89;font:800 24px Manrope,sans-serif}
 .offer-kicker{margin:0;color:#078d8c;font-size:11px;font-weight:800;letter-spacing:.17em}
+.offer-won{margin:14px 0 0!important;color:#078d8c!important;font-size:16px!important;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 .offer-dialog h2{margin:10px 0;font:700 27px/1.2 Manrope,sans-serif;color:#104c69;letter-spacing:-.5px}
 .offer-dialog>p:not(.offer-kicker){margin:0 auto 20px;max-width:370px;color:#607b83;font-size:16px;line-height:1.6}
 .offer-dialog>p strong{color:#087e89}
