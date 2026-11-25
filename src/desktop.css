@@ -73,3 +73,25 @@
 .document-link-button,.document-download-link{flex:none;min-height:38px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px;border:1px solid #cfe1e3;border-radius:8px;background:#f5fafa;color:#075b7e;font:700 13px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.offer-confetti i{animation:none!important;display:none!important}}
 @media(max-width:560px){.offer-dialog{padding:24px 18px 19px}.offer-won{font-size:27px!important;gap:6px}.offer-won span{font-size:19px}.offer-amount{min-height:140px}.offer-amount>b{font-size:21px}.offer-copy{font-size:15px}.optional-upload{font-size:13px}.optional-upload input{font-size:16px}.optional-documents{padding:13px}.document-upload-grid{grid-template-columns:1fr}.document-upload input{font-size:14px}.uploaded-file{align-items:flex-start;flex-direction:column}.document-link-button,.document-download-link{width:100%}}
+.holiday-offer{width:min(500px,calc(100% - 28px));padding:21px 24px 22px;border-radius:24px;background:linear-gradient(150deg,#fff 5%,#fff 66%,#eff8f6 100%)}
+.offer-top-badge{display:grid;width:54px;height:54px;margin:0 auto 4px;place-items:center;border-radius:17px;background:#ddf2ee}
+.offer-top-badge img{width:33px;height:33px;object-fit:contain}
+.holiday-offer .offer-kicker{font-size:10px;color:#285565;letter-spacing:.2em}
+.offer-bow{position:relative;height:65px;margin:0 -24px -2px;overflow:hidden}
+.offer-bow>span{position:absolute;top:35px;left:0;width:100%;height:6px;background:linear-gradient(180deg,#e3b44d,#c88717);clip-path:polygon(0 15%,20% 48%,50% 20%,80% 48%,100% 15%,100% 90%,80% 75%,50% 98%,20% 75%,0 90%)}
+.offer-bow svg{position:absolute;inset:0;width:100%;height:100%}
+.holiday-offer .offer-won{position:relative;display:block;margin:0 0 4px!important;color:#061b48!important;font-size:clamp(27px,7vw,35px)!important;font-weight:950;letter-spacing:-.035em;line-height:1.1;text-transform:uppercase}
+.holiday-offer .offer-won::before,.holiday-offer .offer-won::after{position:absolute;top:50%;color:#e1a623;font-size:25px;content:"✳";transform:translateY(-50%)}
+.holiday-offer .offer-won::before{left:8%}.holiday-offer .offer-won::after{right:8%}
+.holiday-offer .offer-amount{min-height:0;overflow:visible;background:transparent;color:#07574d}
+.holiday-offer .offer-amount::before,.holiday-offer .offer-amount::after{display:none}
+.holiday-offer .offer-amount>strong{font-size:clamp(42px,11.5vw,56px);letter-spacing:-.065em;line-height:1.08}
+.holiday-offer .offer-amount>b{margin:0;color:#073e3a;font-size:clamp(21px,5.5vw,27px);line-height:1.1}
+.holiday-offer .offer-copy{margin:10px auto 16px;font-size:17px;font-weight:500}
+.offer-deadline{display:grid;grid-template-columns:62px 1fr;align-items:center;gap:16px;min-height:74px;margin:0 0 17px;padding:10px 14px;border:1.5px solid #e8a900;border-radius:15px;background:linear-gradient(110deg,#fff9dd,#fff1c3);color:#17434a;text-align:left;font-size:15px;line-height:1.35}
+.offer-deadline>span:last-child strong{font-weight:900;white-space:nowrap}
+.deadline-icon{display:grid;height:48px;place-items:center;border-right:1px solid #d6a20c;color:#0b6962}
+.deadline-icon svg{width:38px;height:38px}
+.holiday-offer .button{min-height:50px;border-radius:8px;font-size:16px}
+.holiday-offer>small{margin-top:13px;font-size:13px;color:#6e8790}
+@media(max-width:560px){.holiday-offer{padding:19px 18px 17px}.offer-bow{height:58px;margin-inline:-18px}.offer-bow>span{top:32px}.holiday-offer .offer-won{font-size:27px!important}.holiday-offer .offer-won::before{left:2%}.holiday-offer .offer-won::after{right:2%}.offer-deadline{grid-template-columns:52px 1fr;gap:11px;padding:9px 10px;font-size:14px}.deadline-icon svg{width:33px;height:33px}.holiday-offer .offer-copy{font-size:15px}}
