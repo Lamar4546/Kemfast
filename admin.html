@@ -25,15 +25,27 @@
         </div>
       </section>
       <section id="login-panel" class="login-panel">
-        <div class="login-icon" aria-hidden="true">K</div>
-        <h2>Staff sign in</h2>
-        <p>Sign in with your authorized Kemlan account to view applications.</p>
-        <div id="admin-error" class="form-error" role="alert" hidden></div>
-        <form id="login-form">
-          <label class="field"><span>Email address</span><input name="email" type="email" required autocomplete="username" placeholder="you@kemlanfinancing.com" /></label>
-          <label class="field"><span>Password</span><input name="password" type="password" required autocomplete="current-password" placeholder="Your password" /></label>
-          <button class="button button-primary" type="submit">Sign in <span>→</span></button>
-        </form>
+        <aside class="login-brand-panel">
+          <a class="login-brand" href="/" aria-label="Kemlan Financing home"><img src="/kemlan-logo.png" alt="Kemlan Financing" /></a>
+          <span class="login-brand-kicker">STAFF WORKSPACE</span>
+          <h1>Welcome back.</h1>
+          <p>Review applications and keep every enquiry moving from one secure place.</p>
+          <div class="login-benefits"><span><b>✓</b> Manage applications</span><span><b>✓</b> Update review status</span><span><b>✓</b> Access uploaded documents</span></div>
+          <div class="login-security"><span aria-hidden="true">▣</span><div><strong>Private staff access</strong><small>Only authorized team members can sign in.</small></div></div>
+        </aside>
+        <div class="login-form-panel">
+          <div class="login-icon" aria-hidden="true">K</div>
+          <div class="eyebrow dark-eyebrow">KEMLAN FINANCING</div>
+          <h2>Sign in to your account</h2>
+          <p>Enter your staff email and password to continue.</p>
+          <div id="admin-error" class="form-error" role="alert" hidden></div>
+          <form id="login-form">
+            <label class="field"><span>Email address</span><input name="email" type="email" required autocomplete="username" placeholder="you@kemlanfinancing.com" /></label>
+            <label class="field"><span>Password</span><input name="password" type="password" required autocomplete="current-password" placeholder="Enter your password" /></label>
+            <button class="button button-primary" type="submit"><span>Sign in securely</span><span aria-hidden="true">→</span></button>
+          </form>
+          <p class="login-help">Need access? Ask your administrator to invite you.</p>
+        </div>
       </section>
       <section id="dashboard" class="admin-workspace" hidden>
         <aside class="admin-sidebar">
