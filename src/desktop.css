@@ -50,7 +50,7 @@
 .offer-won{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 30px 12px!important;color:#111f28!important;font-size:clamp(25px,7vw,31px)!important;font-weight:900;letter-spacing:-.055em;line-height:1.1;text-transform:none}
 .offer-won span{font-size:21px;line-height:1}
 .offer-brand-line{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:13px}
-.offer-mark{width:22px;height:22px;display:grid;place-items:center;border-radius:5px;background:#dcefeb;color:#087e89;font:800 13px Manrope,sans-serif}
+.offer-mark{display:block;width:24px;height:24px;object-fit:contain;border-radius:5px;background:#fff}
 .offer-kicker{margin:0;color:#365761;font-size:10px;font-weight:900;letter-spacing:.2em}
 .offer-amount{position:relative;display:flex;min-height:154px;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;border-radius:15px;background:linear-gradient(125deg,#e1f1ec 0%,#e9f3f5 50%,#f5e9f1 100%);color:#075b4f}
 .offer-amount::before,.offer-amount::after{position:absolute;color:#10a99d;font-size:22px;content:"✦"}
