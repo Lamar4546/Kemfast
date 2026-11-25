@@ -44,13 +44,20 @@
 .document-upload input{width:100%;min-width:0;color:#617a81;font:12px 'DM Sans',sans-serif}
 .document-upload input::file-selector-button{min-height:34px;margin-right:8px;padding:0 10px;border:1px solid #cfdfdf;border-radius:5px;background:#f4f9f9;color:#075b7e;font:600 12px 'DM Sans',sans-serif;cursor:pointer}
 .upload-limit{display:block;margin-top:11px;color:#74898f;font-size:11px;line-height:1.5}
-.offer-dialog{position:fixed;inset:0;margin:auto;width:min(480px,calc(100% - 32px));padding:34px;border:1px solid #d8e8e8;border-radius:20px;background:#fff;color:#173746;box-shadow:0 24px 90px #032d3b66;text-align:center}
+.offer-dialog{position:fixed;inset:0;margin:auto;width:min(400px,calc(100% - 28px));padding:25px 24px 22px;border:1px solid #d8e8e8;border-radius:22px;background:linear-gradient(145deg,#fff 28%,#effaf8 100%);color:#173746;box-shadow:0 24px 90px #032d3b66;text-align:center;overflow:visible}
 .offer-dialog::backdrop{background:#062b3ab8;backdrop-filter:blur(4px)}
-.offer-close{position:absolute;top:12px;right:12px;width:42px;height:42px;border:0;border-radius:50%;background:#f0f7f7;color:#345765;font-size:27px;cursor:pointer}
-.offer-mark{width:50px;height:50px;margin:0 auto 13px;display:grid;place-items:center;border-radius:16px;background:#e5f4f1;color:#087e89;font:800 24px Manrope,sans-serif}
-.offer-kicker{margin:0;color:#078d8c;font-size:11px;font-weight:800;letter-spacing:.17em}
-.offer-won{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 0!important;color:#078d8c!important;font-size:18px!important;font-weight:900;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 0 #d4f0ec}
-.offer-won span{font-size:24px;line-height:1}
+.offer-close{position:absolute;top:11px;right:11px;width:34px;height:34px;border:0;border-radius:50%;background:#eaf2f1;color:#345765;font-size:23px;cursor:pointer}
+.offer-won{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 30px 12px!important;color:#111f28!important;font-size:clamp(25px,7vw,31px)!important;font-weight:900;letter-spacing:-.055em;line-height:1.1;text-transform:none}
+.offer-won span{font-size:21px;line-height:1}
+.offer-brand-line{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:13px}
+.offer-mark{width:22px;height:22px;display:grid;place-items:center;border-radius:5px;background:#dcefeb;color:#087e89;font:800 13px Manrope,sans-serif}
+.offer-kicker{margin:0;color:#365761;font-size:10px;font-weight:900;letter-spacing:.2em}
+.offer-amount{position:relative;display:flex;min-height:154px;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;border-radius:15px;background:linear-gradient(125deg,#e1f1ec 0%,#e9f3f5 50%,#f5e9f1 100%);color:#075b4f}
+.offer-amount::before,.offer-amount::after{position:absolute;color:#10a99d;font-size:22px;content:"✦"}
+.offer-amount::before{left:18px;top:20px}.offer-amount::after{right:18px;bottom:17px;font-size:19px}
+.offer-amount>span{font-size:10px;font-weight:900;letter-spacing:.2em}
+.offer-amount>strong{font-size:clamp(64px,17vw,78px);font-weight:900;letter-spacing:-.075em;line-height:.98}
+.offer-amount>b{margin-top:4px;color:#123346;font-size:23px;letter-spacing:-.04em}
 .offer-dialog>.offer-confetti{position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none}
 .offer-dialog>:not(.offer-confetti):not(.offer-close){position:relative;z-index:2}
 .offer-close{z-index:3}
@@ -58,14 +65,12 @@
 .offer-confetti .confetti-ribbon{width:8px;height:14px;border-radius:2px;background:var(--piece-color)}
 .offer-confetti .confetti-dot{width:8px;height:8px;border-radius:50%;background:var(--piece-color)}
 @keyframes offer-confetti-fall{0%{opacity:0;transform:translate3d(0,-12px,0) rotate(0)}12%{opacity:1}100%{opacity:.8;transform:translate3d(22px,105vh,0) rotate(var(--turn))}}
-.offer-dialog h2{margin:10px 0;font:700 27px/1.2 Manrope,sans-serif;color:#104c69;letter-spacing:-.5px}
-.offer-dialog>p:not(.offer-kicker){margin:0 auto 20px;max-width:370px;color:#607b83;font-size:16px;line-height:1.6}
-.offer-dialog>p strong{color:#087e89}
-.offer-dialog .button{width:100%;font-size:15px;min-height:50px}
-.offer-dialog>small{display:block;margin-top:15px;color:#819297;font-size:11px;line-height:1.5}
+.offer-copy{margin:13px auto 16px;color:#213f4d;font-size:16px;font-weight:650;line-height:1.4}
+.offer-dialog .button{width:100%;min-height:48px;justify-content:center;gap:12px;border-radius:8px;background:#075b7e;font-size:14px;box-shadow:0 5px 12px #075b7e22}
+.offer-dialog>small{display:block;margin-top:13px;color:#526a72;font-size:11px;line-height:1.5}
 .uploaded-heading{grid-column:1/-1;margin:20px 0 0;padding-top:15px;border-top:1px solid #e6eeee;font:700 17px Manrope,sans-serif;color:#14516b}
 .uploaded-file{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #edf2f2}
 .uploaded-file strong{font-size:14px;overflow-wrap:anywhere}
 .document-link-button,.document-download-link{flex:none;min-height:38px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px;border:1px solid #cfe1e3;border-radius:8px;background:#f5fafa;color:#075b7e;font:700 13px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.offer-confetti i{animation:none!important;display:none!important}}
-@media(max-width:560px){.offer-dialog{padding:29px 22px 23px}.offer-dialog h2{font-size:24px}.offer-dialog>p:not(.offer-kicker){font-size:15px}.offer-won{font-size:16px!important;gap:7px}.offer-won span{font-size:22px}.optional-upload{font-size:13px}.optional-upload input{font-size:16px}.optional-documents{padding:13px}.document-upload-grid{grid-template-columns:1fr}.document-upload input{font-size:14px}.uploaded-file{align-items:flex-start;flex-direction:column}.document-link-button,.document-download-link{width:100%}}
+@media(max-width:560px){.offer-dialog{padding:24px 18px 19px}.offer-won{font-size:27px!important;gap:6px}.offer-won span{font-size:19px}.offer-amount{min-height:140px}.offer-amount>b{font-size:21px}.offer-copy{font-size:15px}.optional-upload{font-size:13px}.optional-upload input{font-size:16px}.optional-documents{padding:13px}.document-upload-grid{grid-template-columns:1fr}.document-upload input{font-size:14px}.uploaded-file{align-items:flex-start;flex-direction:column}.document-link-button,.document-download-link{width:100%}}
