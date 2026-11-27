@@ -5,7 +5,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.loan_applications (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
-  status text not null default 'new' check (status in ('new','pending_approval','approved')),
+  status text not null default 'new' check (status in ('new','pending_approval','approved','rejected')),
   application_source text not null default 'website',
   first_name text not null,
   middle_name text,
@@ -101,7 +101,9 @@ alter table public.loan_applications
   add column if not exists other_ref_address text,
   add column if not exists documents text[] not null default '{}',
   add column if not exists uploaded_documents jsonb not null default '[]'::jsonb,
-  add column if not exists terms_accepted boolean not null default true;
+  add column if not exists terms_accepted boolean not null default true,
+  add column if not exists marketing_consent boolean not null default false,
+  add column if not exists has_off_payroll_loans text not null default 'No';
 
 alter table public.loan_applications alter column application_source set default 'website';
 
@@ -135,6 +137,19 @@ alter table public.loan_applications drop constraint if exists loan_applications
 alter table public.loan_applications add constraint loan_applications_status_check
   check (status in ('new','pending_approval','approved','rejected'));
 
+alter table public.loan_applications drop constraint if exists loan_applications_has_off_payroll_loans_check;
+alter table public.loan_applications add constraint loan_applications_has_off_payroll_loans_check
+  check (has_off_payroll_loans in ('Yes','No'));
+
+-- The admin lists recent records and filters by status/source. These indexes keep
+-- those reads responsive as the application table grows.
+create index if not exists loan_applications_created_at_idx
+  on public.loan_applications (created_at desc);
+create index if not exists loan_applications_status_created_at_idx
+  on public.loan_applications (status, created_at desc);
+create index if not exists loan_applications_source_created_at_idx
+  on public.loan_applications (application_source, created_at desc);
+
 create table if not exists public.admin_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   added_at timestamptz not null default now()
@@ -153,7 +168,7 @@ grant execute on function public.is_kemlan_admin() to authenticated;
 
 drop policy if exists "Anyone can submit an application" on public.loan_applications;
 create policy "Anyone can submit an application" on public.loan_applications
-  for insert to anon, authenticated with check (true);
+  for insert to anon, authenticated with check (status = 'new');
 
 drop policy if exists "Kemlan staff can view applications" on public.loan_applications;
 create policy "Kemlan staff can view applications" on public.loan_applications
@@ -164,7 +179,20 @@ create policy "Admins can view their own allowlist entry" on public.admin_users
   for select to authenticated using (user_id = (select auth.uid()));
 
 revoke all on public.loan_applications from anon, authenticated;
-grant insert on public.loan_applications to anon, authenticated;
+revoke insert (status, created_at) on public.loan_applications from anon, authenticated;
+grant insert (
+  id, application_source, first_name, middle_name, last_name, date_of_birth,
+  trn, id_type, phone, other_phone, email, home_address, town, parish, residence,
+  time_at_address, employment_status, employment_duration, employer_name,
+  employer_sector, job_title, branch_department, company_address, company_phone,
+  supervisor_name, supervisor_phone, salary_deduction_allowed, pay_frequency,
+  net_pay, next_pay_date, has_additional_income, loan_amount, loan_term,
+  loan_purpose, repayment_route, promo_code, loan_explanation,
+  has_off_payroll_loans, family_ref_name, family_ref_phone,
+  family_ref_relationship, family_ref_address, other_ref_name, other_ref_phone,
+  other_ref_relationship, other_ref_address, documents, uploaded_documents,
+  terms_accepted, marketing_consent
+) on public.loan_applications to anon, authenticated;
 grant select on public.loan_applications to authenticated;
 grant update (status) on public.loan_applications to authenticated;
 grant delete on public.loan_applications to authenticated;
