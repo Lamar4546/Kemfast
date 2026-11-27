@@ -6,6 +6,7 @@ const loginForm = document.querySelector('#login-form');
 const errorBox = document.querySelector('#admin-error');
 const signout = document.querySelector('#signout');
 const detailsModal = document.querySelector('#details-modal');
+const documentPreviewModal = document.querySelector('#document-preview-modal');
 const inviteCard = document.querySelector('#invite-card');
 const inviteForm = document.querySelector('#invite-form');
 const inviteStatus = document.querySelector('#invite-status');
@@ -189,6 +190,71 @@ function fieldValue(row, key) {
   return row[key];
 }
 
+async function getDocumentLink(row, file, download = false) {
+  const response = await fetch('/api/document-link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ applicationId: row.id, path: file.path, download })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || 'Could not prepare the secure document link.');
+  return result;
+}
+
+function showDocumentPreview(file, result) {
+  const title = document.querySelector('#document-preview-title');
+  const content = document.querySelector('#document-preview-content');
+  title.textContent = file.name || 'Uploaded document';
+  content.replaceChildren();
+  const contentType = file.content_type || result.contentType || '';
+  const isImage = contentType.startsWith('image/') || /\.(jpe?g|png)$/i.test(file.name || '');
+  if (isImage) {
+    const image = document.createElement('img');
+    image.src = result.url;
+    image.alt = file.name || 'Applicant uploaded image';
+    content.append(image);
+  } else {
+    const frame = document.createElement('iframe');
+    frame.src = result.url;
+    frame.title = file.name || 'Applicant uploaded PDF';
+    frame.type = 'application/pdf';
+    content.append(frame);
+  }
+  document.querySelector('#download-preview-document').onclick = async event => {
+    event.preventDefault();
+    const downloadTab = window.open('about:blank', '_blank');
+    try {
+      const download = await getDocumentLink(selectedApplication, file, true);
+      if (downloadTab) downloadTab.location = download.url;
+      else window.location.assign(download.url);
+    } catch (error) {
+      downloadTab?.close();
+      window.alert(error.message);
+    }
+  };
+  document.querySelector('#print-preview-document').onclick = () => {
+    const image = content.querySelector('img');
+    if (image) {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) return window.alert('Allow pop-ups to print this image.');
+      printWindow.opener = null;
+      const style = printWindow.document.createElement('style');
+      style.textContent = 'body{margin:0;display:grid;place-items:center;min-height:100vh}img{display:block;max-width:100%;max-height:100vh;object-fit:contain}';
+      const printImage = printWindow.document.createElement('img');
+      printImage.alt = image.alt;
+      printImage.src = image.src;
+      printImage.onload = () => { printWindow.focus(); printWindow.print(); };
+      printWindow.document.head.append(style);
+      printWindow.document.body.append(printImage);
+      return;
+    }
+    const frame = content.querySelector('iframe');
+    try { frame?.contentWindow?.print(); }
+    catch { window.open(result.url, '_blank', 'noopener'); }
+  };
+  if (!documentPreviewModal.open) documentPreviewModal.showModal();
+}
+
 function showDetails(row) {
   selectedApplication = row;
   document.querySelector('#modal-name').textContent = `${row.first_name} ${row.last_name}`;
@@ -229,34 +295,47 @@ function showDetails(row) {
       wrap.className = 'uploaded-file';
       const name = document.createElement('strong');
       name.textContent = [file.document_type, file.name].filter(Boolean).join(' · ') || 'Uploaded document';
-      const action = document.createElement('button');
-      action.type = 'button';
-      action.className = 'document-link-button';
-      action.textContent = 'Create secure download link';
-      action.addEventListener('click', async () => {
-        action.disabled = true;
-        action.textContent = 'Preparing link…';
+      const actions = document.createElement('div');
+      actions.className = 'uploaded-file-actions';
+      const preview = document.createElement('button');
+      preview.type = 'button';
+      preview.className = 'document-link-button';
+      preview.textContent = 'View / print';
+      preview.addEventListener('click', async () => {
+        preview.disabled = true;
+        preview.textContent = 'Opening…';
         try {
-          const response = await fetch('/api/document-link', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-            body: JSON.stringify({ applicationId: row.id, path: file.path })
-          });
-          const result = await response.json().catch(() => ({}));
-          if (!response.ok) throw new Error(result.error || 'Could not create the document link.');
-          const link = document.createElement('a');
-          link.href = result.url;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          link.textContent = 'Download document';
-          link.className = 'document-download-link';
-          action.replaceWith(link);
+          const result = await getDocumentLink(row, file);
+          showDocumentPreview(file, result);
         } catch (error) {
-          action.textContent = error.message;
-          action.disabled = false;
+          window.alert(error.message);
+        } finally {
+          preview.textContent = 'View / print';
+          preview.disabled = false;
         }
       });
-      wrap.append(name, action);
+      const download = document.createElement('button');
+      download.type = 'button';
+      download.className = 'document-link-button document-download-button';
+      download.textContent = 'Download';
+      download.addEventListener('click', async () => {
+        const downloadTab = window.open('about:blank', '_blank');
+        download.disabled = true;
+        download.textContent = 'Preparing…';
+        try {
+          const result = await getDocumentLink(row, file, true);
+          if (downloadTab) downloadTab.location = result.url;
+          else window.location.assign(result.url);
+        } catch (error) {
+          downloadTab?.close();
+          window.alert(error.message);
+        } finally {
+          download.disabled = false;
+          download.textContent = 'Download';
+        }
+      });
+      actions.append(preview, download);
+      wrap.append(name, actions);
       fields.append(wrap);
     }
   }
@@ -385,6 +464,11 @@ inviteForm.addEventListener('submit', async event => {
 });
 document.querySelector('#close-modal').addEventListener('click', () => detailsModal.close());
 detailsModal.addEventListener('click', event => { if (event.target === detailsModal) detailsModal.close(); });
+document.querySelector('#close-document-preview').addEventListener('click', () => documentPreviewModal.close());
+documentPreviewModal.addEventListener('click', event => { if (event.target === documentPreviewModal) documentPreviewModal.close(); });
+documentPreviewModal.addEventListener('close', () => {
+  document.querySelector('#document-preview-content').replaceChildren();
+});
 document.querySelector('#refresh').addEventListener('click', async () => { try { await loadApplications(); } catch (error) { showError(error.message); } });
 document.querySelector('#application-search').addEventListener('input', filterApplications);
 document.querySelector('#status-filter').addEventListener('change', filterApplications);

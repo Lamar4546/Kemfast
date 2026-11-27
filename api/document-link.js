@@ -13,10 +13,11 @@ export default async function handler(req, res) {
   if (!base || !anonKey || !serviceKey) return json(res, 503, { error: 'Add SUPABASE_URL, SUPABASE_ANON_KEY, and the server-only SUPABASE_SECRET_KEY to Vercel, then redeploy. The legacy SUPABASE_SERVICE_ROLE_KEY is also supported.' });
   const token = (req.headers.authorization || '').startsWith('Bearer ') ? req.headers.authorization.slice(7) : '';
   if (!token) return json(res, 401, { error: 'Please sign in again.' });
-  const { applicationId, path } = req.body || {};
+  const { applicationId, path, download = false } = req.body || {};
   if (typeof applicationId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(applicationId) || typeof path !== 'string' || !path.startsWith(`${applicationId}/`) || path.includes('..')) {
     return json(res, 400, { error: 'Invalid document reference.' });
   }
+  if (typeof download !== 'boolean') return json(res, 400, { error: 'Invalid document action.' });
 
   try {
     const userResponse = await fetch(`${base}/auth/v1/user`, { headers: { apikey: anonKey, Authorization: `Bearer ${token}` } });
@@ -29,17 +30,20 @@ export default async function handler(req, res) {
     const recordResponse = await fetch(`${base}/rest/v1/loan_applications?select=uploaded_documents&id=eq.${encodeURIComponent(applicationId)}&limit=1`, { headers: privilegedHeaders(serviceKey) });
     if (!recordResponse.ok) return json(res, 502, { error: 'Could not verify the application document.' });
     const [application] = await recordResponse.json();
-    if (!application || !Array.isArray(application.uploaded_documents) || !application.uploaded_documents.some(file => file?.path === path)) return json(res, 404, { error: 'Document not found for this application.' });
+    const file = application?.uploaded_documents?.find(item => item?.path === path);
+    if (!file) return json(res, 404, { error: 'Document not found for this application.' });
 
     const objectPath = path.split('/').map(encodeURIComponent).join('/');
+    const signOptions = { expiresIn: 300 };
+    if (download) signOptions.download = typeof file.name === 'string' ? file.name.replace(/[\\/\r\n\";]/g, '_') : true;
     const signResponse = await fetch(`${base}/storage/v1/object/sign/${BUCKET}/${objectPath}`, {
       method: 'POST',
       headers: { ...privilegedHeaders(serviceKey), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ expiresIn: 300, download: true })
+      body: JSON.stringify(signOptions)
     });
     const signed = await signResponse.json().catch(() => ({}));
     if (!signResponse.ok || !signed.signedURL) return json(res, 502, { error: 'Could not open this document.' });
-    return json(res, 200, { url: `${base}/storage/v1${signed.signedURL}` });
+    return json(res, 200, { url: `${base}/storage/v1${signed.signedURL}`, name: file.name || 'Applicant document', contentType: file.content_type || 'application/octet-stream' });
   } catch {
     return json(res, 502, { error: 'Could not contact secure document storage.' });
   }
