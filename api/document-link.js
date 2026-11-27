@@ -23,11 +23,15 @@ export default async function handler(req, res) {
     const userResponse = await fetch(`${base}/auth/v1/user`, { headers: { apikey: anonKey, Authorization: `Bearer ${token}` } });
     if (!userResponse.ok) return json(res, 401, { error: 'Your session expired. Sign in again.' });
     const user = await userResponse.json();
-    const adminResponse = await fetch(`${base}/rest/v1/admin_users?select=user_id&user_id=eq.${encodeURIComponent(user.id)}&limit=1`, { headers: privilegedHeaders(serviceKey) });
+    const adminResponse = await fetch(`${base}/rest/v1/admin_users?select=user_id&user_id=eq.${encodeURIComponent(user.id)}&limit=1`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${token}` }
+    });
     if (!adminResponse.ok) return json(res, 502, { error: 'Could not verify staff permissions.' });
     if (!(await adminResponse.json()).length) return json(res, 403, { error: 'Authorized staff access is required.' });
 
-    const recordResponse = await fetch(`${base}/rest/v1/loan_applications?select=uploaded_documents&id=eq.${encodeURIComponent(applicationId)}&limit=1`, { headers: privilegedHeaders(serviceKey) });
+    const recordResponse = await fetch(`${base}/rest/v1/loan_applications?select=uploaded_documents&id=eq.${encodeURIComponent(applicationId)}&limit=1`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${token}` }
+    });
     if (!recordResponse.ok) return json(res, 502, { error: 'Could not verify the application document.' });
     const [application] = await recordResponse.json();
     const file = application?.uploaded_documents?.find(item => item?.path === path);

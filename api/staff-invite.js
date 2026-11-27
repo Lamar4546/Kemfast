@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     const currentUser = await userResponse.json();
 
     const allowlistResponse = await fetch(`${base}/rest/v1/admin_users?select=user_id&user_id=eq.${encodeURIComponent(currentUser.id)}&limit=1`, {
-      headers: privilegedHeaders(serviceKey)
+      headers: { apikey: anonKey, Authorization: `Bearer ${token}` }
     });
     if (!allowlistResponse.ok) return json(res, 502, { error: 'Could not verify staff permissions.' });
     const allowlist = await allowlistResponse.json();
